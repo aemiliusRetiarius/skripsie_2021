@@ -106,5 +106,17 @@ def distance(a, b):
     dist = np.linalg.norm(encode_point(a)-encode_point(b))
     return dist
 
+df = pd.DataFrame(columns=['source', 'target', 'dist'])
 
+new_row = {'source': 1, 'target': 2, 'dist':25}
+new_row2 = {'source': 3, 'target': 1, 'dist':50}
+new_row3 = {'source': 3, 'target': 2, 'dist':25}
+
+df = df.append(new_row, ignore_index=True)
+df = df.append(new_row2, ignore_index=True)
+df = df.append(new_row3, ignore_index=True)
+
+#df['source'].value_counts().loc[lambda x : x==1]
+#for source in range(1, 99):
+    #while( df['source'] == source )
 
