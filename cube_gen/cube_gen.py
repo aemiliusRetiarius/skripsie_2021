@@ -3,6 +3,7 @@
 import numpy as np
 from numpy.core.defchararray import mod
 import pandas as pd
+from random import randint
 
 
 # Front Face: (5x5)
@@ -108,15 +109,54 @@ def distance(a, b):
 
 df = pd.DataFrame(columns=['source', 'target', 'dist'])
 
-new_row = {'source': 1, 'target': 2, 'dist':25}
-new_row2 = {'source': 3, 'target': 1, 'dist':50}
-new_row3 = {'source': 3, 'target': 2, 'dist':25}
-
+rand_target = randint(2, 98) #was 98
+new_row = {'source': 1, 'target': rand_target, 'dist': distance(1, rand_target)}
 df = df.append(new_row, ignore_index=True)
-df = df.append(new_row2, ignore_index=True)
-df = df.append(new_row3, ignore_index=True)
 
-#df['source'].value_counts().loc[lambda x : x==1]
-#for source in range(1, 99):
-    #while( df['source'] == source )
+for source in range(1, 98):
+    total_cons = 0
+    print("source: ", source)
+    while( total_cons < 5):
+        
+        try:
+            source_cons = df['source'].value_counts().loc[source]
+        except:
+            source_cons = 0
 
+        try:
+            target_cons = df['target'].value_counts().loc[source]
+        except:
+            target_cons = 0
+
+        total_cons = source_cons + target_cons
+        if(total_cons > 4):
+            continue
+
+        valid_target = False
+        while not valid_target:
+            rand_target = randint(1, 98)
+            if rand_target != source:
+                
+                if ((df['source'] == source) & (df['target'] == rand_target)).any() == False:
+                    
+                    if ((df['source'] == rand_target) & (df['target'] == source)).any() == False:
+                        try:
+                            target_source_cons = df['source'].value_counts().loc[rand_target]
+                        except:
+                            target_source_cons = 0
+
+                        try:
+                            target_target_cons = df['target'].value_counts().loc[rand_target]
+                        except:
+                            target_target_cons = 0
+
+                        target_total_cons = target_source_cons + target_target_cons
+                        if target_total_cons < 5:
+                            valid_target = True
+        
+        
+        new_row = {'source': source, 'target': rand_target, 'dist': distance(source, rand_target)}
+        df = df.append(new_row, ignore_index=True)
+
+print(df)
+df.to_csv('dists.csv')
