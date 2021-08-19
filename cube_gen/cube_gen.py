@@ -1,3 +1,5 @@
+#TODO: change points per face to be dynamic
+
 import numpy as np
 import pandas as pd
 
@@ -36,10 +38,44 @@ import pandas as pd
 # |   |
 # 90--92
 
-def decode_point (a):
+def encode_point (a):
     
-    return
+    #############
+    if a < 1 or a > 98:
+        raise("Invalid value to be encoded: " + a)
+    #############
 
+    #define x, y and z for face origins. F,B,L,R,T,B
+    up = 100 # upper limit
+    low = 0 #lower limit
+    interval = (up - low) / 5
+    origins = np.array([[low, up, low, up, low, low],
+                        [low, up, up, low, low, up],
+                        [low, low, low, low, up, low]])
+
+    if(a >= 90): #bottom face
+        origin = origins[:,5]
+        return
+
+    elif(a >= 81): #top face
+        origin = origins[:,4]
+        return
+
+    elif(a >= 66): #right face
+        origin = origins[:,3]
+        return
+
+    elif(a >= 51): #left face
+        origin = origins[:,2]
+        return
+
+    elif(a >= 81): #back face
+        origin = origins[:,1]
+        return
+
+    else:          #front face
+        origin = origins[:,0]
+        return
 def distance(a, b):
     
     return
