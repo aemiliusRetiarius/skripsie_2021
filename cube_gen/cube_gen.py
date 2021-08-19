@@ -36,6 +36,10 @@ import pandas as pd
 # |   |
 # 90--92
 
+def decode_point (a):
+    
+    return
 
 def distance(a, b):
+    
     return
