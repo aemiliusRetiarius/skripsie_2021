@@ -43,7 +43,7 @@ def encode_point (a):
     
     #############
     if a < 1 or a > 98:
-        raise("Invalid value to be encoded: " + a)
+        raise("Invalid value to be encoded: " + str(a))
     #############
 
     #define x, y and z for face origins. F,B,L,R,T,B
@@ -103,7 +103,8 @@ def encode_point (a):
         return encoded_point
 
 def distance(a, b):
-    
-    return
+    dist = np.linalg.norm(encode_point(a)-encode_point(b))
+    return dist
 
-print(encode_point(32))
+
+
