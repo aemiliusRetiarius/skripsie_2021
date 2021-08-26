@@ -11,10 +11,16 @@ def reconstruct(dist_csv_string, num_points):
 
     for index, row in dist_df.iterrows():
         #print(row['source'], row['target'], row['dist'])
-        source_index = row['source']
-        target_index = row['target']
+        source_index = row['source'] - 1 #offset
+        target_index = row['target'] - 1 #offser=t
         sq_dist = row['dist']**2
+        
+        #TODO: Add handling for out of bounds obeservations, may need dynamic size of sq_dist_mat
+        #if (source_index > num_points - 1) or (target_index > num_points - 1): 
+        #    continue
+        
+        sq_dist_mat[index, 0] = sq_dist
+        
 
 
-
-print(reconstruct('.\cube_gen\dists.csv', 98))
+reconstruct('.\cube_gen\dists.csv', 98)
