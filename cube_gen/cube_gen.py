@@ -159,4 +159,4 @@ for source in range(1, 98):
         df = df.append(new_row, ignore_index=True)
 
 print(df)
-df.to_csv('dists.csv')
+df.to_csv('.\cube_gen\dists.csv')
