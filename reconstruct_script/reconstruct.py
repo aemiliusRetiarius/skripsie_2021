@@ -11,7 +11,7 @@ def reconstruct(dist_csv_string, num_points):
     sq_dist_mat = np.zeros((num_obs, 1))
 
     for index, row in dist_df.iterrows():
-        #print(row['source'], row['target'], row['dist'])
+        
         source_index = int(row['source']) - 1 #offset
         target_index = int(row['target']) - 1 #offser=t
         sq_dist = row['dist']**2
@@ -34,6 +34,9 @@ def reconstruct(dist_csv_string, num_points):
         coef_mat[index, target_index * 3 + 1] = 1 #y coord
         coef_mat[index, target_index * 3 + 2] = 1 #z coord
 
-
+    res = np.dot(np.linalg.pinv(coef_mat), sq_dist_mat)
+    res = abs((np.min(res))) + res
+    res = np.sqrt(res)
+    print(res)
 
 reconstruct('.\cube_gen\dists.csv', 98)
