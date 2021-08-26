@@ -1,7 +1,6 @@
 #TODO: change points per face to be dynamic
 
 import numpy as np
-from numpy.core.defchararray import mod
 import pandas as pd
 from random import randint
 
