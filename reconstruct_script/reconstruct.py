@@ -24,7 +24,9 @@ def reconstruct(dist_csv_string, num_points):
         #fill squared distance matrix
         sq_dist_mat[index, 0] = sq_dist
 
-        #in coef mat all rows are linearly idependent, a_t dot a is nonsingular
+        #in coef mat all rows are linearly idependent, a_t dot a is nonsingular, will not work bec. cloumns dependent
+        #in coef mat columns linearly dependent, thus noninvertible
+
         #activate source coeff in coeff matrix
         coef_mat[index, (source_index * 3)] = 1 #x coord
         coef_mat[index, (source_index * 3 + 1)] = 1 #y coord
@@ -35,13 +37,11 @@ def reconstruct(dist_csv_string, num_points):
         coef_mat[index, target_index * 3 + 1] = 1 #y coord
         coef_mat[index, target_index * 3 + 2] = 1 #z coord
 
-    #res = np.dot(np.linalg.pinv(coef_mat), sq_dist_mat)
+    res = np.dot(np.linalg.pinv(coef_mat), sq_dist_mat)
     
-    gram = np.dot(coef_mat, np.transpose(coef_mat))
-    print(gram[9,:])
-    w = np.dot(np.linalg.inv(gram), sq_dist_mat)
-    print(w)
-    res = np.dot(np.transpose(coef_mat), w)
+    #gram = np.dot(coef_mat, np.transpose(coef_mat))
+    #w = np.dot(np.linalg.pinv(gram), sq_dist_mat)
+    #res = np.dot(np.transpose(coef_mat), w)
     
     res = abs((np.min(res))) + res
     res = np.sqrt(res)
