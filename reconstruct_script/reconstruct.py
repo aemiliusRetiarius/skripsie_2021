@@ -43,6 +43,8 @@ def reconstruct(dist_csv_string, num_points):
     #w = np.dot(np.linalg.pinv(gram), sq_dist_mat)
     #res = np.dot(np.transpose(coef_mat), w)
     
+    #res = np.linalg.lstsq(coef_mat, sq_dist_mat, rcond=None)
+
     res = abs((np.min(res))) + res
     res = np.sqrt(res)
     print(res)
