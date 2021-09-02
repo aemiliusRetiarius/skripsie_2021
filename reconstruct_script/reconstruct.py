@@ -131,4 +131,4 @@ def reconstruct(dist_csv_string, num_points):
     #plt.show()
 
 
-reconstruct('.\cube_gen\dists_test_2d_full.csv', 25)
+reconstruct('.\cube_gen\dists_test_2d.csv', 25)

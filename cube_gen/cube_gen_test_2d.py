@@ -116,7 +116,7 @@ for source in range(1, 25):
     total_cons = 0
     print("source: ", source)
     out_iter = 0
-    while( total_cons < 5):
+    while( total_cons < 20):
         print(out_iter)
         if out_iter > 50:
             break
@@ -133,7 +133,7 @@ for source in range(1, 25):
 
         total_cons = source_cons + target_cons
 
-        if(total_cons > 4):    
+        if(total_cons > 19):    
             continue
 
         valid_target = False
@@ -156,7 +156,7 @@ for source in range(1, 25):
                             target_target_cons = 0
 
                         target_total_cons = target_source_cons + target_target_cons
-                        if target_total_cons < 5:
+                        if target_total_cons < 20:
                             valid_target = True
             
             in_iter = in_iter + 1
