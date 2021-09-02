@@ -3,7 +3,6 @@ from numpy.linalg.linalg import cholesky
 import pandas as pd
 
 from sklearn.manifold import MDS
-from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 from mpl_toolkits import mplot3d
 
