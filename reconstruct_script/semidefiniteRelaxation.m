@@ -1,4 +1,4 @@
-function [EDM, X] = sdr_complete_edm(D, W, lambda)
+function [EDM, X] = semidefiniteRelaxation(D, W, lambda)
 
 n = size(D, 1);
 x = -1/(n + sqrt(n));
