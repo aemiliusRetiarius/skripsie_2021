@@ -1,3 +1,4 @@
+from operator import rshift
 import numpy as np
 from numpy.linalg.linalg import cholesky
 import pandas as pd
@@ -10,6 +11,8 @@ from sklearn.manifold import MDS
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import alphashape as alsh
+from descartes import PolygonPatch
 #from mayavi import mlab
 
 
@@ -123,12 +126,12 @@ def reconstruct(dist_csv_string, num_points):
     #rank = 2
     #res = np.matrix(P[:, :rank]) * np.sqrt(np.diag(D[:rank]))
 
-    #embedding = MDS(n_components=3, verbose=2, dissimilarity='precomputed', max_iter=3000, eps=1e-12)
-    #res = embedding.fit_transform(dist_mat)
+    embedding = MDS(n_components=3, verbose=2, dissimilarity='precomputed', max_iter=3000, eps=1e-12)
+    res = embedding.fit_transform(dist_mat)
 
     #SEMIDEFINITE RELAXATION
 
-    scipy.io.savemat('.\\reconstruct_script\edm_raw.mat', dict(dist_mat=dist_mat, mask_mat=mask_mat))
+    #scipy.io.savemat('.\\reconstruct_script\edm_raw.mat', dict(dist_mat=dist_mat, mask_mat=mask_mat))
     
     #mat_conv = matlab.double(mat_test.tolist())
     
@@ -150,20 +153,40 @@ def reconstruct(dist_csv_string, num_points):
     #plt.scatter([res[:,0]], [res[:,1]])
     #plt.show()
 
-    #fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-    #ax = plt.axes(projection="3d")
+    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    ax = plt.axes(projection="3d")
 
     #ax.scatter3D(res[:, 0], res[:, 1], res[:, 2], c=res[:, 2], cmap='hsv')
     #ax.plot_trisurf(res[:, 0], res[:, 1], res[:, 2], cmap=cm.coolwarm, linewidth=0, antialiased=False)
     #ax.plot_wireframe(res[:, 0], res[:, 1], res[:, 2],rstride=10, cstride=10)
     #test_dist = (res[2, 0]**2 + res[2, 1]**2 + res[2, 2]**2 + res[3, 0]**2 + res[3, 1]**2 + res[3, 2]**2)**0.5
     
+    #alphashape
+    points_2d = [(0., 0.), (0., 1.), (1., 1.), (1., 0.),
+          (0.5, 0.25), (0.5, 0.75), (0.25, 0.5), (0.75, 0.5)]
+    points_3d = [
+    (0., 2., -1.), (3., -2., 1.), (3., 2., -1.),
+    (0., 2., -1.), (3., -2., 1.), (3., 2., -1.),
+    ]
+    
+    #fig, ax = plt.subplots()
+    res_list = list(map(tuple, res))
+    alpha_shape = alsh.alphashape(res_list, 0.005)
+    #print(alpha_shape)
+    #ax.scatter(*zip(*res_list))
+    #ax.add_patch(PolygonPatch(alpha_shape, alpha=0.2))
+    
+    #print(res_list[0])
+    #alpha_shape = alsh.alphashape(res_list)
+    ax.plot_trisurf(*zip(*alpha_shape.vertices), triangles=alpha_shape.faces,cmap=cm.jet)
+
     #delauny
     #pts = mlab.points3d(res[:, 0], res[:, 1], res[:, 2], res[:, 2])
 
-    #plt.show()
+    plt.show()
 
-reconstruct('.\cube_gen\dists.csv', 98)
+#reconstruct('.\cube_gen\dists.csv', 98)
 #reconstruct('.\cube_gen\dists_test_49.csv', 98)
 #reconstruct('.\cube_gen\dists_test_90.csv', 98)
-#reconstruct('.\cube_gen\dists_test_full.csv', 98)
+reconstruct('.\cube_gen\Data\dists_test_full.csv', 98)
+#reconstruct('.\cube_gen\Data\dists_test_2d_full.csv', 25)

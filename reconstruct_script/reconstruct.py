@@ -2,12 +2,12 @@ import numpy as np
 import pandas as pd
 
 import scipy.io
+import io
 import os
 
 import sys
 
 sibling_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'cube_gen')
-print('importing: ', sibling_path)
 sys.path.insert(0, sibling_path)
 
 from cube_gen import gen_dist_df
@@ -18,12 +18,13 @@ from sklearn.manifold import MDS
 
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import alphashape as alsh
 
 def reconstruct_file(dist_csv_string, num_points):
     dist_df = pd.read_csv(dist_csv_string)
     reconstruct(dist_df, num_points)
 
-def reconstruct(dist_df, num_points, projection):
+def reconstruct(dist_df, num_points, projection, verbosity=0):
     
     dist_mat = np.zeros((num_points, num_points)) #dist matrix between points for MDS
     mask_mat = np.zeros((num_points, num_points))
@@ -58,7 +59,12 @@ def reconstruct(dist_df, num_points, projection):
     eng.addpath(os.path.dirname(os.path.abspath(__file__)), nargout= 0 )
     eng.addpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data"), nargout= 0 )
     print('Script Starting')
-    eng.matlab_connector(nargout=0)
+    if verbosity < 2:
+        out = io.StringIO()
+        err = io.StringIO()
+        eng.matlab_connector(nargout=0,background=False,stdout=out,stderr=err)
+    else:
+        eng.matlab_connector(nargout=0)
     print('Script Complete')
 
     print(">>>>>>>>>>>")
@@ -69,16 +75,23 @@ def reconstruct(dist_df, num_points, projection):
 
     print('Loaded matrix shape: ' + str(edm['ans'].shape))
 
-    embedding = MDS(n_components=3, verbose=1, dissimilarity='precomputed', max_iter=3000, eps=1e-12)
+    embedding = MDS(n_components=3, verbose=verbosity, dissimilarity='precomputed', max_iter=3000, eps=1e-12)
     res = embedding.fit_transform(edm['ans'])
 
-    fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    fig = plt.figure()
     ax = plt.axes(projection="3d")
     if projection == 'scatter':
         ax.scatter3D(res[:, 0], res[:, 1], res[:, 2], c=res[:, 2], cmap='hsv')
+        plt.show()
     if projection == 'trisurf':
         ax.plot_trisurf(res[:, 0], res[:, 1], res[:, 2], cmap=cm.jet, linewidth=0, antialiased=False)
-    plt.show()
+        plt.show()
+    if projection == 'alpha':
+        res_list = list(map(tuple, res))
+        alpha_shape = alsh.alphashape(res_list, 0.005)
+        ax.plot_trisurf(*zip(*alpha_shape.vertices), triangles=alpha_shape.faces, cmap=cm.coolwarm)
+        plt.show()
+    
 
 
 if __name__ == '__main__':
@@ -94,5 +107,10 @@ if __name__ == '__main__':
         noise_percentage = 0
         projection = 'trisurf'
 
-    dist_df = gen_dist_df(num_points, point_connections, noise_percentage)
-    reconstruct(dist_df, num_points, projection)
+    try:
+        verbosity = int(sys.argv[5])
+    except:
+        verbosity = 0
+
+    dist_df = gen_dist_df(num_points, point_connections, noise_percentage, verbosity)
+    reconstruct(dist_df, num_points, projection, verbosity)
