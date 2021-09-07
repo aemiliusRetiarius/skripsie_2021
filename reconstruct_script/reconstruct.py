@@ -23,7 +23,7 @@ def reconstruct_file(dist_csv_string, num_points):
     dist_df = pd.read_csv(dist_csv_string)
     reconstruct(dist_df, num_points)
 
-def reconstruct(dist_df, num_points):
+def reconstruct(dist_df, num_points, projection):
     
     dist_mat = np.zeros((num_points, num_points)) #dist matrix between points for MDS
     mask_mat = np.zeros((num_points, num_points))
@@ -74,8 +74,10 @@ def reconstruct(dist_df, num_points):
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     ax = plt.axes(projection="3d")
-    #ax.scatter3D(res[:, 0], res[:, 1], res[:, 2], c=res[:, 2], cmap='hsv')
-    ax.plot_trisurf(res[:, 0], res[:, 1], res[:, 2], cmap=cm.jet, linewidth=0, antialiased=False)
+    if projection == 'scatter':
+        ax.scatter3D(res[:, 0], res[:, 1], res[:, 2], c=res[:, 2], cmap='hsv')
+    if projection == 'trisurf':
+        ax.plot_trisurf(res[:, 0], res[:, 1], res[:, 2], cmap=cm.jet, linewidth=0, antialiased=False)
     plt.show()
 
 
@@ -85,10 +87,12 @@ if __name__ == '__main__':
         num_points = int(sys.argv[1])
         point_connections = int(sys.argv[2])
         noise_percentage = int(sys.argv[3])
+        projection = str(sys.argv[4])
     except:
         num_points = 98
         point_connections = 97
         noise_percentage = 0
+        projection = 'trisurf'
 
     dist_df = gen_dist_df(num_points, point_connections, noise_percentage)
-    reconstruct(dist_df, num_points)
+    reconstruct(dist_df, num_points, projection)
