@@ -11,9 +11,11 @@ from sklearn.manifold import MDS
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
-def reconstruct(dist_csv_string, num_points):
-    
+def reconstruct_file(dist_csv_string, num_points):
     dist_df = pd.read_csv(dist_csv_string)
+    reconstruct(dist_df, num_points)
+
+def reconstruct(dist_df, num_points):
     
     dist_mat = np.zeros((num_points, num_points)) #dist matrix between points for MDS
     mask_mat = np.zeros((num_points, num_points))
@@ -65,8 +67,9 @@ def reconstruct(dist_csv_string, num_points):
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
     ax = plt.axes(projection="3d")
-    ax.plot_trisurf(res[:, 0], res[:, 1], res[:, 2], cmap=cm.coolwarm, linewidth=0, antialiased=False)
+    #ax.scatter3D(res[:, 0], res[:, 1], res[:, 2], c=res[:, 2], cmap='hsv')
+    ax.plot_trisurf(res[:, 0], res[:, 1], res[:, 2], cmap=cm.jet, linewidth=0, antialiased=False)
     plt.show()
 
 
-reconstruct('.\cube_gen\dists_test_full.csv', 98)
+reconstruct_file('.\cube_gen\dists_test_40.csv', 98)
