@@ -79,6 +79,16 @@ def reconstruct(dist_df, num_points):
     plt.show()
 
 
-#reconstruct_file('.\cube_gen\dists_test_40.csv', 98)
-dist_df = gen_dist_df(98, 60, 50)
-reconstruct(dist_df, 98)
+if __name__ == '__main__':
+    #reconstruct_file('.\cube_gen\Data\dists_test_40.csv', 98)
+    try:
+        num_points = int(sys.argv[1])
+        point_connections = int(sys.argv[2])
+        noise_percentage = int(sys.argv[3])
+    except:
+        num_points = 98
+        point_connections = 97
+        noise_percentage = 0
+
+    dist_df = gen_dist_df(num_points, point_connections, noise_percentage)
+    reconstruct(dist_df, num_points)
