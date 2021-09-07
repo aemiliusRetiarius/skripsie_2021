@@ -4,6 +4,14 @@ import pandas as pd
 import scipy.io
 import os
 
+import sys
+
+sibling_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'cube_gen')
+print('importing: ', sibling_path)
+sys.path.insert(0, sibling_path)
+
+from cube_gen import gen_dist_df
+
 import matlab.engine
 
 from sklearn.manifold import MDS
@@ -49,8 +57,7 @@ def reconstruct(dist_df, num_points):
     eng = matlab.engine.start_matlab()
     eng.addpath(os.path.dirname(os.path.abspath(__file__)), nargout= 0 )
     eng.addpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data"), nargout= 0 )
-    print('Connected')
-    print('Script Running')
+    print('Script Starting')
     eng.matlab_connector(nargout=0)
     print('Script Complete')
 
@@ -62,7 +69,7 @@ def reconstruct(dist_df, num_points):
 
     print('Loaded matrix shape: ' + str(edm['ans'].shape))
 
-    embedding = MDS(n_components=3, verbose=2, dissimilarity='precomputed', max_iter=3000, eps=1e-12)
+    embedding = MDS(n_components=3, verbose=1, dissimilarity='precomputed', max_iter=3000, eps=1e-12)
     res = embedding.fit_transform(edm['ans'])
 
     fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
@@ -72,4 +79,6 @@ def reconstruct(dist_df, num_points):
     plt.show()
 
 
-reconstruct_file('.\cube_gen\dists_test_40.csv', 98)
+#reconstruct_file('.\cube_gen\dists_test_40.csv', 98)
+dist_df = gen_dist_df(98, 60, 50)
+reconstruct(dist_df, 98)

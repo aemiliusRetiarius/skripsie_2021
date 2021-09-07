@@ -109,15 +109,15 @@ def distance(a, b, percentage):
     print("noisy ", dist)
     return dist
 
-def gen_dist_df(req_cons, noise_percent):
+def gen_dist_df(num_points, req_cons, noise_percent):
 
     df = pd.DataFrame(columns=['source', 'target', 'dist'])
 
-    rand_target = randint(2, 98) #was 98
+    rand_target = randint(2, num_points) #was 98
     new_row = {'source': 1, 'target': rand_target, 'dist': distance(1, rand_target, noise_percent/100)}
     df = df.append(new_row, ignore_index=True)
 
-    for source in range(1, 98):
+    for source in range(1, num_points):
         total_cons = 0
         print("source: ", source)
         while( total_cons < req_cons):
@@ -144,7 +144,7 @@ def gen_dist_df(req_cons, noise_percent):
             valid_target = False
             iteration = 0
             while (not valid_target) and iteration < 100:
-                rand_target = randint(1, 98)
+                rand_target = randint(1, num_points)
                 
                 #if targeting itself, continue
                 if rand_target == source:
@@ -182,5 +182,6 @@ def gen_dist_df(req_cons, noise_percent):
     
     return df
 
-df = gen_dist_df(98, 10)
-df.to_csv('.\cube_gen\dists_test_10_perc_noise.csv')
+if(__name__ == '__main__'):
+    df = gen_dist_df(98, 10)
+    df.to_csv('.\cube_gen\dists_test_10_perc_noise.csv')
