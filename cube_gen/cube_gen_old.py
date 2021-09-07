@@ -115,7 +115,7 @@ df = df.append(new_row, ignore_index=True)
 for source in range(1, 98):
     total_cons = 0
     print("source: ", source)
-    while( total_cons < 7):
+    while( total_cons < 5):
         
         try:
             source_cons = df['source'].value_counts().loc[source]
@@ -128,7 +128,7 @@ for source in range(1, 98):
             target_cons = 0
 
         total_cons = source_cons + target_cons
-        if(total_cons > 6):
+        if(total_cons > 4):
             continue
 
         valid_target = False
@@ -150,7 +150,7 @@ for source in range(1, 98):
                             target_target_cons = 0
 
                         target_total_cons = target_source_cons + target_target_cons
-                        if target_total_cons < 7:
+                        if target_total_cons < 5:
                             valid_target = True
         
         
@@ -158,4 +158,4 @@ for source in range(1, 98):
         df = df.append(new_row, ignore_index=True)
 
 print(df)
-df.to_csv('.\cube_gen\dists_test.csv')
+df.to_csv('.\cube_gen\dists.csv')

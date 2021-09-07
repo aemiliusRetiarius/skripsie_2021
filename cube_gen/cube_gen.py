@@ -102,60 +102,85 @@ def encode_point (a):
 
         return encoded_point
 
-def distance(a, b):
+def distance(a, b, percentage):
     dist = np.linalg.norm(encode_point(a)-encode_point(b))
+    print("clean ", dist)
+    dist = np.random.normal(dist, dist * percentage * 0.28571428)
+    print("noisy ", dist)
     return dist
 
-df = pd.DataFrame(columns=['source', 'target', 'dist'])
+def gen_dist_df(req_cons, noise_percent):
 
-rand_target = randint(2, 98) #was 98
-new_row = {'source': 1, 'target': rand_target, 'dist': distance(1, rand_target)}
-df = df.append(new_row, ignore_index=True)
+    df = pd.DataFrame(columns=['source', 'target', 'dist'])
 
-for source in range(1, 98):
-    total_cons = 0
-    print("source: ", source)
-    while( total_cons < 5):
-        
-        try:
-            source_cons = df['source'].value_counts().loc[source]
-        except:
-            source_cons = 0
+    rand_target = randint(2, 98) #was 98
+    new_row = {'source': 1, 'target': rand_target, 'dist': distance(1, rand_target, noise_percent/100)}
+    df = df.append(new_row, ignore_index=True)
 
-        try:
-            target_cons = df['target'].value_counts().loc[source]
-        except:
-            target_cons = 0
+    for source in range(1, 98):
+        total_cons = 0
+        print("source: ", source)
+        while( total_cons < req_cons):
 
-        total_cons = source_cons + target_cons
-        if(total_cons > 4):
-            continue
+            #count source connections
+            try:
+                source_cons = df['source'].value_counts().loc[source]
+            except:
+                source_cons = 0
 
-        valid_target = False
-        while not valid_target:
-            rand_target = randint(1, 98)
-            if rand_target != source:
+            #count target connections
+            try:
+                target_cons = df['target'].value_counts().loc[source]
+            except:
+                target_cons = 0
+
+            #if total connections is enough, move to next point
+            total_cons = source_cons + target_cons
+            print("cons: ", total_cons)
+            if(total_cons >= req_cons):
+                continue
+            
+            #find valid target
+            valid_target = False
+            iteration = 0
+            while (not valid_target) and iteration < 100:
+                rand_target = randint(1, 98)
                 
-                if ((df['source'] == source) & (df['target'] == rand_target)).any() == False:
-                    
-                    if ((df['source'] == rand_target) & (df['target'] == source)).any() == False:
-                        try:
-                            target_source_cons = df['source'].value_counts().loc[rand_target]
-                        except:
-                            target_source_cons = 0
+                #if targeting itself, continue
+                if rand_target == source:
+                    continue
+                #if connection already exists, continue
+                if ((df['source'] == source) & (df['target'] == rand_target)).any() == True:
+                    continue        
+                #if inverse connection already exists, continue
+                if ((df['source'] == rand_target) & (df['target'] == source)).any() == True:
+                    continue 
 
-                        try:
-                            target_target_cons = df['target'].value_counts().loc[rand_target]
-                        except:
-                            target_target_cons = 0
+                #count target connections        
+                try:
+                    target_source_cons = df['source'].value_counts().loc[rand_target]
+                except:
+                    target_source_cons = 0
 
-                        target_total_cons = target_source_cons + target_target_cons
-                        if target_total_cons < 5:
-                            valid_target = True
-        
-        
-        new_row = {'source': source, 'target': rand_target, 'dist': distance(source, rand_target)}
-        df = df.append(new_row, ignore_index=True)
+                try:
+                    target_target_cons = df['target'].value_counts().loc[rand_target]
+                except:
+                    target_target_cons = 0
+                
+                #if target connections less than required, set it as a valid target
+                target_total_cons = target_source_cons + target_target_cons
+                if target_total_cons < req_cons:
+                    valid_target = True
+                
+                #iterate loop
+                iteration = iteration + 1
+            
+            if(iteration == 100):
+                print("iters reached")
+            new_row = {'source': source, 'target': rand_target, 'dist': distance(source, rand_target, noise_percent/100)}
+            df = df.append(new_row, ignore_index=True)
+    
+    return df
 
-print(df)
-df.to_csv('.\cube_gen\dists.csv')
+df = gen_dist_df(98, 10)
+df.to_csv('.\cube_gen\dists_test_10_perc_noise.csv')
