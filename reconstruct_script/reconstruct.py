@@ -20,9 +20,12 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import alphashape as alsh
 
-def reconstruct_file(dist_csv_string, num_points):
+def reconstruct_file(dist_csv_string, projection, verbosity=0):
     dist_df = pd.read_csv(dist_csv_string)
-    reconstruct(dist_df, num_points)
+    num_points = int(max(dist_df['source'].max(), dist_df['source'].max())) +1
+    if verbosity > 0: print(">>>>>>>>>>>")
+    if verbosity > 0: print("Reconstructing with", num_points, "points")
+    reconstruct(dist_df, num_points, projection, verbosity)
 
 def reconstruct(dist_df, num_points, projection, verbosity=0):
     
@@ -97,21 +100,27 @@ def reconstruct(dist_df, num_points, projection, verbosity=0):
 if __name__ == '__main__':
     #reconstruct_file('.\cube_gen\Data\dists_test_40.csv', 98)
 
+    filepath = None
     num_points = 98
     point_connections = 97
     noise_percentage = 0
+    error_percentage = 0
     projection = 'alpha'
     verbosity = 0
 
     for param in range(1, len(sys.argv), 2):
-        
+
         try:
-            if (sys.argv[param] == '-p'):
+            if (sys.argv[param] == '-f'):
+                filepath = str(sys.argv[param+1])
+            elif (sys.argv[param] == '-p'):
                 num_points = int(sys.argv[param+1])
             elif (sys.argv[param] == '-c'):
                 point_connections = int(sys.argv[param+1])
             elif (sys.argv[param] == '-n'):
-                noise_percentage = int(sys.argv[param+1])
+                noise_percentage = float(sys.argv[param+1])
+            elif (sys.argv[param] == '-e'):
+                error_percentage = float(sys.argv[param+1])
             elif (sys.argv[param] == '-g'):
                 projection = str(sys.argv[param+1])
             elif (sys.argv[param] == '-v'):
@@ -122,8 +131,10 @@ if __name__ == '__main__':
         except:
             raise Exception("Malformed parameters.")
 
-
-    if verbosity > 0: print(">>>>>>>>>>>")
-    if verbosity > 0: print("Generating distance list...")
-    dist_df = gen_dist_df(num_points, point_connections, noise_percentage, verbosity)
-    reconstruct(dist_df, num_points, projection, verbosity)
+    if filepath == None:
+        if verbosity > 0: print(">>>>>>>>>>>")
+        if verbosity > 0: print("Generating distance list...")
+        dist_df = gen_dist_df(num_points, point_connections, noise_percentage, error_percentage, verbosity)
+        reconstruct(dist_df, num_points, projection, verbosity)
+    else:
+        reconstruct_file(filepath, projection, verbosity)

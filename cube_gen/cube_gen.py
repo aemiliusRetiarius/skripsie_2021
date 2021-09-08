@@ -2,7 +2,9 @@
 
 import numpy as np
 import pandas as pd
-from random import randint
+from random import randint, uniform
+
+from scipy.sparse.construct import rand
 
 
 # Front Face: (5x5)
@@ -109,7 +111,7 @@ def distance(a, b, percentage, verbosity=0):
     if verbosity > 3: print("noisy ", dist)
     return dist
 
-def gen_dist_df(num_points, req_cons, noise_percent=0, verbosity=0):
+def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosity=0):
 
     df = pd.DataFrame(columns=['source', 'target', 'dist'])
 
@@ -180,6 +182,19 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, verbosity=0):
             new_row = {'source': source, 'target': rand_target, 'dist': distance(source, rand_target, noise_percent/100, verbosity)}
             df = df.append(new_row, ignore_index=True)
     
+    error_num = int(len(df.index)*(error_percent/100))
+    if verbosity > 0: print("Total Number of records: ", int(len(df.index)))
+    for _ in range(error_num):
+        sample = df.sample()
+
+        if verbosity > 3: print('Old distance: ', float(sample['dist']))
+        #new_dist = df.sample()['dist']
+        new_dist = uniform(df['dist'].min(), df['dist'].max())
+        sample.dist = new_dist
+        df.update(sample)
+        if verbosity > 3: print('New distance: ', float(new_dist))
+    if verbosity > 0 and error_num > 0: print("Number of records changed: ", error_num)
+
     return df
 
 if(__name__ == '__main__'):
