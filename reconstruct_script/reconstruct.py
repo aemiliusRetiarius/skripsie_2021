@@ -47,34 +47,34 @@ def reconstruct(dist_df, num_points, projection, verbosity=0):
         mask_mat[source_index, target_index] = 1
         mask_mat[target_index, source_index] = 1
 
-    print(">>>>>>>>>>>")
+    if verbosity > 0: print(">>>>>>>>>>>")
     target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "edm_raw.mat")
     scipy.io.savemat(target_path, dict(dist_mat=dist_mat, mask_mat=mask_mat))
-    print(target_path)
-    print('Incomplete EDM Matrices saved')
+    if verbosity > 0: print(target_path)
+    if verbosity > 0: print('Incomplete EDM Matrices saved')
     
-    print(">>>>>>>>>>>")
-    print('Connecting to Matlab...')
+    if verbosity > 0: print(">>>>>>>>>>>")
+    if verbosity > 0: print('Connecting to Matlab...')
     eng = matlab.engine.start_matlab()
     eng.addpath(os.path.dirname(os.path.abspath(__file__)), nargout= 0 )
     eng.addpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data"), nargout= 0 )
-    print('Script Starting')
+    if verbosity > 0: print('Script Starting')
     if verbosity < 2:
         out = io.StringIO()
         err = io.StringIO()
         eng.matlab_connector(nargout=0,background=False,stdout=out,stderr=err)
     else:
         eng.matlab_connector(nargout=0)
-    print('Script Complete')
+    if verbosity > 0: print('Script Complete')
 
-    print(">>>>>>>>>>>")
+    if verbosity > 0: print(">>>>>>>>>>>")
     target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "recon_edm.mat")
-    print(target_path)
+    if verbosity > 0: print(target_path)
 
     edm = scipy.io.loadmat(target_path)
 
-    print('Loaded matrix shape: ' + str(edm['ans'].shape))
-
+    if verbosity > 0: print('Loaded matrix shape: ' + str(edm['ans'].shape))
+    if verbosity > 0: verbosity = verbosity - 1
     embedding = MDS(n_components=3, verbose=verbosity, dissimilarity='precomputed', max_iter=3000, eps=1e-12)
     res = embedding.fit_transform(edm['ans'])
 
@@ -88,7 +88,7 @@ def reconstruct(dist_df, num_points, projection, verbosity=0):
         plt.show()
     if projection == 'alpha':
         res_list = list(map(tuple, res))
-        alpha_shape = alsh.alphashape(res_list, 0.005)
+        alpha_shape = alsh.alphashape(res_list, 0.01)
         ax.plot_trisurf(*zip(*alpha_shape.vertices), triangles=alpha_shape.faces, cmap=cm.coolwarm)
         plt.show()
     
@@ -96,21 +96,34 @@ def reconstruct(dist_df, num_points, projection, verbosity=0):
 
 if __name__ == '__main__':
     #reconstruct_file('.\cube_gen\Data\dists_test_40.csv', 98)
-    try:
-        num_points = int(sys.argv[1])
-        point_connections = int(sys.argv[2])
-        noise_percentage = int(sys.argv[3])
-        projection = str(sys.argv[4])
-    except:
-        num_points = 98
-        point_connections = 97
-        noise_percentage = 0
-        projection = 'trisurf'
 
-    try:
-        verbosity = int(sys.argv[5])
-    except:
-        verbosity = 0
+    num_points = 98
+    point_connections = 97
+    noise_percentage = 0
+    projection = 'alpha'
+    verbosity = 0
 
+    for param in range(1, len(sys.argv), 2):
+        
+        try:
+            if (sys.argv[param] == '-p'):
+                num_points = int(sys.argv[param+1])
+            elif (sys.argv[param] == '-c'):
+                point_connections = int(sys.argv[param+1])
+            elif (sys.argv[param] == '-n'):
+                noise_percentage = int(sys.argv[param+1])
+            elif (sys.argv[param] == '-g'):
+                projection = str(sys.argv[param+1])
+            elif (sys.argv[param] == '-v'):
+                verbosity = int(sys.argv[param+1])
+            else:
+                raise Exception("Parameter not recognized. Accepted types: -p -c -n -g -v")
+
+        except:
+            raise Exception("Malformed parameters.")
+
+
+    if verbosity > 0: print(">>>>>>>>>>>")
+    if verbosity > 0: print("Generating distance list...")
     dist_df = gen_dist_df(num_points, point_connections, noise_percentage, verbosity)
     reconstruct(dist_df, num_points, projection, verbosity)

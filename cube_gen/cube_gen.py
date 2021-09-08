@@ -104,9 +104,9 @@ def encode_point (a):
 
 def distance(a, b, percentage, verbosity=0):
     dist = np.linalg.norm(encode_point(a)-encode_point(b))
-    if verbosity > 2: print("clean ", dist)
+    if verbosity > 3: print("clean ", dist)
     dist = np.random.normal(dist, dist * percentage * 0.28571428)
-    if verbosity > 2: print("noisy ", dist)
+    if verbosity > 3: print("noisy ", dist)
     return dist
 
 def gen_dist_df(num_points, req_cons, noise_percent=0, verbosity=0):
@@ -119,7 +119,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, verbosity=0):
 
     for source in range(1, num_points):
         total_cons = 0
-        if verbosity > 0: print("source: ", source)
+        if verbosity > 1: print("source: ", source)
         while( total_cons < req_cons):
 
             #count source connections
@@ -136,7 +136,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, verbosity=0):
 
             #if total connections is enough, move to next point
             total_cons = source_cons + target_cons
-            if verbosity > 1: print("cons: ", total_cons)
+            if verbosity > 2: print("cons: ", total_cons)
             if(total_cons >= req_cons):
                 continue
             
@@ -177,7 +177,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, verbosity=0):
             
             if(iteration == 100):
                 if verbosity > 2 : print("iters reached")
-            new_row = {'source': source, 'target': rand_target, 'dist': distance(source, rand_target, noise_percent/100)}
+            new_row = {'source': source, 'target': rand_target, 'dist': distance(source, rand_target, noise_percent/100, verbosity)}
             df = df.append(new_row, ignore_index=True)
     
     return df
