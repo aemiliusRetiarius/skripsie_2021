@@ -194,7 +194,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
     for _ in range(error_num):
         
         sample = df.sample()
-        if verbosity > 2: print('Index of record changed:', int(sample.index))
+        if verbosity > 2: print('Index of record changed:', sample.index.item())
         col_to_change = randrange(0,3)
 
         if col_to_change == 0:
