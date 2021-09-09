@@ -194,22 +194,35 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
     if verbosity > 1: print("Distance max:", max_dist, "min:", min_dist)
 
     for _ in range(error_num):
+        
         sample = df.sample()
-
-        col_to_change = randrange(3)
-        print("col:", col_to_change)
+        if verbosity > 2: print('Index of record changed:', int(sample.index))
+        col_to_change = randrange(0,3)
+        
         if col_to_change == 0:
-            new_source = randrange(3)
+            
+            if verbosity > 3: print('Old source:', int(sample['source']))
+            new_source = randrange(min_index, max_index + 1)
+            sample.source = new_source
+            df.update(sample)
+            if verbosity > 3: print('New source:', new_source)
+
         elif col_to_change == 1:
-            new_target = randrange(3)
+            
+            if verbosity > 3: print('Old target:', int(sample['source']))
+            new_target = randrange(min_index, max_index + 1)
+            sample.target = new_target
+            df.update(sample)
+            if verbosity > 3: print('New target:', new_target)
+
         else:
+            
             if verbosity > 3: print('Old distance: ', float(sample['dist']))
-            #change source/target
-            #new_dist = df.sample()['dist']
             new_dist = uniform(min_dist, max_dist)
             sample.dist = new_dist
             df.update(sample)
             if verbosity > 3: print('New distance: ', float(new_dist))
+
     if verbosity > 0 and error_num > 0: print("Number of records changed: ", error_num)
 
     return df
