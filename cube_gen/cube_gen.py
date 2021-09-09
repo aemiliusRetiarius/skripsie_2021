@@ -2,7 +2,7 @@
 
 import numpy as np
 import pandas as pd
-from random import randint, uniform
+from random import randint, uniform, randrange
 
 from scipy.sparse.construct import rand
 
@@ -183,16 +183,33 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
             df = df.append(new_row, ignore_index=True)
     
     error_num = int(len(df.index)*(error_percent/100))
-    if verbosity > 0: print("Total Number of records: ", int(len(df.index)))
+    if verbosity > 0: print("Total number of records: ", int(len(df.index)))
+    
+    max_dist = df['dist'].max()
+    min_dist = df['dist'].min()
+    max_index = int(max(df['source'].max(), df['target'].max()))
+    min_index = int(min(df['source'].min(), df['target'].min()))
+    
+    if verbosity > 1: print("Index max:", max_index, "min:", min_index)
+    if verbosity > 1: print("Distance max:", max_dist, "min:", min_dist)
+
     for _ in range(error_num):
         sample = df.sample()
 
-        if verbosity > 3: print('Old distance: ', float(sample['dist']))
-        #new_dist = df.sample()['dist']
-        new_dist = uniform(df['dist'].min(), df['dist'].max())
-        sample.dist = new_dist
-        df.update(sample)
-        if verbosity > 3: print('New distance: ', float(new_dist))
+        col_to_change = randrange(3)
+        print("col:", col_to_change)
+        if col_to_change == 0:
+            new_source = randrange(3)
+        elif col_to_change == 1:
+            new_target = randrange(3)
+        else:
+            if verbosity > 3: print('Old distance: ', float(sample['dist']))
+            #change source/target
+            #new_dist = df.sample()['dist']
+            new_dist = uniform(min_dist, max_dist)
+            sample.dist = new_dist
+            df.update(sample)
+            if verbosity > 3: print('New distance: ', float(new_dist))
     if verbosity > 0 and error_num > 0: print("Number of records changed: ", error_num)
 
     return df
