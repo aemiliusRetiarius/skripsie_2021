@@ -4,8 +4,6 @@ import numpy as np
 import pandas as pd
 from random import randint, uniform, randrange
 
-from scipy.sparse.construct import rand
-
 
 # Front Face: (5x5)
 # 21--25
@@ -198,7 +196,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
         sample = df.sample()
         if verbosity > 2: print('Index of record changed:', int(sample.index))
         col_to_change = randrange(0,3)
-        
+
         if col_to_change == 0:
             
             if verbosity > 3: print('Old source:', int(sample['source']))
