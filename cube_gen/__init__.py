@@ -1,1 +1,1 @@
-from .cube_gen import gen_dist_df
+from .cube_gen import gen_dist_df, encode_point
