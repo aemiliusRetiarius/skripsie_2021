@@ -1,3 +1,5 @@
+#TODO: check if casting sys.argv is redundant
+
 import numpy as np
 import pandas as pd
 
@@ -21,14 +23,14 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import alphashape as alsh
 
-def reconstruct_file(dist_csv_string, projection=None, rotate=True, return_err_ord=None, verbosity=0):
+def reconstruct_file(dist_csv_string, projection=None, rotate=True, return_err_ord=None, ret_points=None, verbosity=0):
     dist_df = pd.read_csv(dist_csv_string)
     num_points = int(max(dist_df['source'].max(), dist_df['target'].max()))
     if verbosity > 0: print(">>>>>>>>>>>")
     if verbosity > 0: print("Reconstructing with", num_points, "points")
-    return reconstruct(dist_df, projection, rotate, return_err_ord, verbosity)
+    return reconstruct(dist_df, projection, rotate, return_err_ord, ret_points, verbosity)
 
-def reconstruct(dist_df, projection=None, rotate=True, err_ord=None, verbosity=0):
+def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points=None, verbosity=0):
     
     num_points = int(max(dist_df['source'].max(), dist_df['target'].max()))
     if verbosity > 0: print(">>>>>>>>>>>")
@@ -118,7 +120,8 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None, verbosity=0
         ax.plot_trisurf(*zip(*alpha_shape.vertices), triangles=alpha_shape.faces, cmap=cm.coolwarm)
         plt.show()
 
-    if(err_ord != None):
+    #only return error of specified order
+    if(err_ord != None) and ((ret_points == None) or (ret_points == False)):
         if(rotate == False):
             warnings.warn('Rotation flag not set to true, returning unrotated error')
         if err_ord == 'rel':
@@ -126,6 +129,18 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None, verbosity=0
         else:
             return np.linalg.norm((res-true_points), err_ord)
     
+    #only return reconstructed points
+    if(err_ord == None) and (ret_points == True):
+        return res
+
+    #return both error of specified order and reconstructed points
+    if(err_ord != None) and (ret_points == True):
+        if(rotate == False):
+            warnings.warn('Rotation flag not set to true, returning unrotated error')
+        if err_ord == 'rel':
+            return ((np.linalg.norm((res-true_points), 2)) / np.linalg.norm((true_points), 2)) , res
+        else:
+            return np.linalg.norm((res-true_points), err_ord), res
 
 
 if __name__ == '__main__':
@@ -137,6 +152,7 @@ if __name__ == '__main__':
     noise_percentage = 0
     error_percentage = 0
     return_err_ord = None
+    return_points = None
     projection = None
     rotate = True
     verbosity = 0
@@ -144,40 +160,40 @@ if __name__ == '__main__':
     for param in range(1, len(sys.argv), 2):
 
         try:
-            if (sys.argv[param] == '-f'):
+            if (sys.argv[param] == '-f'): #reconstruct from file
                 
                 filepath = str(sys.argv[param+1])
-            elif (sys.argv[param] == '-p'):
+            elif (sys.argv[param] == '-p'): #Number of points to reconstruct
                 
                 num_points = int(sys.argv[param+1])
                 if num_points < 1 or num_points > 98:
                     raise Exception("Number of points to be reconstructed out of bounds. Must be in the interval 1 to 98.")
             
-            elif (sys.argv[param] == '-c'):
+            elif (sys.argv[param] == '-c'): #Number of connections per point
                 
                 point_connections = int(sys.argv[param+1])
                 if point_connections < 1 or point_connections > 98:
                     raise Exception("Number of point connections out of bounds. Must be in the interval 1 to 97.")
             
-            elif (sys.argv[param] == '-n'):
+            elif (sys.argv[param] == '-n'): #Noise percentage (3.5 sigma)
                 
                 noise_percentage = float(sys.argv[param+1])
                 if noise_percentage < 0:
                     raise Exception("Noise percentage must be non-negative.")
             
-            elif (sys.argv[param] == '-e'):
+            elif (sys.argv[param] == '-e'): #Record percentage to change
                 
                 error_percentage = float(sys.argv[param+1])
                 if error_percentage < 0:
                     raise Exception("Record error percentage must be non-negative.")
 
-            elif (sys.argv[param] == '-g'):
+            elif (sys.argv[param] == '-g'): #Graph mode
                 
                 projection = str(sys.argv[param+1])
                 if not(projection == 'scatter' or projection == 'trisurf' or projection == 'alpha'):
                     raise Exception("Projection not parseable. Accepted types: scatter, trisurf, alpha.")
 
-            elif (sys.argv[param] == '-r'):
+            elif (sys.argv[param] == '-r'): #Rotation flag to correct reconstructed object
 
                 if (str(sys.argv[param+1])) == 'true' or (str(sys.argv[param+1])) == 'True' or (str(sys.argv[param+1])) == 'TRUE' or (str(sys.argv[param+1])) == '1':
                     rotate = True
@@ -186,18 +202,30 @@ if __name__ == '__main__':
                 else:
                     raise Exception("Boolean not parseable. Accepted types: true/false, True/False, TRUE/FALSE, 1/0.")
             
-            elif (sys.argv[param] == '-eo'):
+            elif (sys.argv[param] == '-eo'): #Order of error returned
 
                 if(str(sys.argv[param+1]) == 'rel'):
                     return_err_ord = 'rel'
                 else:
                     return_err_ord = int(sys.argv[param+1])
-            elif (sys.argv[param] == '-v'):
+            
+            elif(sys.argv[param] == '-ret'):
+
+                if (str(sys.argv[param+1])) == 'true' or (str(sys.argv[param+1])) == 'True' or (str(sys.argv[param+1])) == 'TRUE' or (str(sys.argv[param+1])) == '1':
+                    return_points = True
+                elif (str(sys.argv[param+1])) == 'false' or (str(sys.argv[param+1])) == 'False' or (str(sys.argv[param+1])) == 'FALSE' or (str(sys.argv[param+1])) == '0':
+                    return_points = False
+                else:
+                    raise Exception("Boolean not parseable. Accepted types: true/false, True/False, TRUE/FALSE, 1/0.")
+
+            elif (sys.argv[param] == '-v'): #Level of verbosity
+
                 verbosity = int(sys.argv[param+1])
                 if verbosity < 0:
                     raise Exception("Verbosity must be non-negative.")
                 if verbosity > 4:
                     warnings.warn("Verbosity levels above 4 currently have no additional effect.")
+
             else:
                 raise Exception("Parameter not recognized. Accepted types: -p -c -n -e -g -r -eo -v.")
 
@@ -206,10 +234,14 @@ if __name__ == '__main__':
 
     if filepath == None:
         dist_df = gen_dist_df(num_points, point_connections, noise_percentage, error_percentage, verbosity)
-        error = reconstruct(dist_df, projection, rotate, return_err_ord, verbosity)
+        error, points = reconstruct(dist_df, projection, rotate, return_err_ord, return_points, verbosity)
     else:
-        error = reconstruct_file(filepath, projection, rotate, return_err_ord, verbosity)
+        error, points = reconstruct_file(filepath, projection, rotate, return_err_ord, return_points, verbosity)
     
+    if return_points != None:
+        print("Reconstructed Points:")
+        print(points)
+
     if return_err_ord != None:
             if return_err_ord == 'rel':
                 print("Reconstructed relative error:", error)
