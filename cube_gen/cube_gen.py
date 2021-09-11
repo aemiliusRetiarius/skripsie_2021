@@ -1,4 +1,5 @@
 #TODO: change points per face to be dynamic
+#TODO: rewrite source and target selection using pandas sampling
 
 import numpy as np
 import pandas as pd
@@ -114,10 +115,10 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
     if verbosity > 0: print(">>>>>>>>>>>")
     if verbosity > 0: print("Generating distance list...")
 
-    df = pd.DataFrame(columns=['source', 'target', 'dist'])
+    df = pd.DataFrame(columns=['source', 'target', 'dist', 'changed'])
 
     rand_target = randint(2, num_points) #was 98
-    new_row = {'source': 1, 'target': rand_target, 'dist': distance(1, rand_target, noise_percent/100)}
+    new_row = {'source': 1, 'target': rand_target, 'dist': distance(1, rand_target, noise_percent/100), 'changed': False}
     df = df.append(new_row, ignore_index=True)
 
     for source in range(1, num_points):
@@ -180,7 +181,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
             
             if(iteration == 100):
                 if verbosity > 2 : print("iters reached")
-            new_row = {'source': source, 'target': rand_target, 'dist': distance(source, rand_target, noise_percent/100, verbosity)}
+            new_row = {'source': source, 'target': rand_target, 'dist': distance(source, rand_target, noise_percent/100, verbosity), 'changed' : False}
             df = df.append(new_row, ignore_index=True)
     
     error_num = int(len(df.index)*(error_percent/100))
@@ -196,7 +197,8 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
 
     for _ in range(error_num):
         
-        sample = df.sample()
+        condition = df['changed'] == False
+        sample = df[condition].sample(n=1)
         if verbosity > 2: print('Index of record changed:', sample.index.item())
         col_to_change = randrange(0,3)
 
@@ -205,6 +207,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
             if verbosity > 3: print('Old source:', int(sample['source']))
             new_source = randrange(min_index, max_index + 1)
             sample.source = new_source
+            sample.changed = True
             df.update(sample)
             if verbosity > 3: print('New source:', new_source)
 
@@ -213,6 +216,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
             if verbosity > 3: print('Old target:', int(sample['source']))
             new_target = randrange(min_index, max_index + 1)
             sample.target = new_target
+            sample.changed = True
             df.update(sample)
             if verbosity > 3: print('New target:', new_target)
 
@@ -221,6 +225,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
             if verbosity > 3: print('Old distance: ', float(sample['dist']))
             new_dist = uniform(min_dist, max_dist)
             sample.dist = new_dist
+            sample.changed = True
             df.update(sample)
             if verbosity > 3: print('New distance: ', float(new_dist))
 
