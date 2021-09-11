@@ -1,4 +1,5 @@
 #TODO: check if casting sys.argv is redundant
+#TODO: Add parameter for passing existing matlab engine connection
 
 import numpy as np
 import pandas as pd
