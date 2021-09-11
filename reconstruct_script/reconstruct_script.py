@@ -227,7 +227,7 @@ if __name__ == '__main__':
                     warnings.warn("Verbosity levels above 4 currently have no additional effect.")
 
             else:
-                raise Exception("Parameter not recognized. Accepted types: -p -c -n -e -g -r -eo -v.")
+                raise Exception("Parameter not recognized. Accepted types: -p -c -n -e -g -r -eo -ret -v.")
 
         except:
             raise Exception("Malformed parameters.")
