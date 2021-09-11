@@ -111,6 +111,9 @@ def distance(a, b, percentage, verbosity=0):
 
 def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosity=0):
 
+    if verbosity > 0: print(">>>>>>>>>>>")
+    if verbosity > 0: print("Generating distance list...")
+
     df = pd.DataFrame(columns=['source', 'target', 'dist'])
 
     rand_target = randint(2, num_points) #was 98

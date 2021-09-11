@@ -205,9 +205,6 @@ if __name__ == '__main__':
             raise Exception("Malformed parameters.")
 
     if filepath == None:
-        
-        if verbosity > 0: print(">>>>>>>>>>>")
-        if verbosity > 0: print("Generating distance list...")
         dist_df = gen_dist_df(num_points, point_connections, noise_percentage, error_percentage, verbosity)
         error = reconstruct(dist_df, projection, rotate, return_err_ord, verbosity)
     else:
