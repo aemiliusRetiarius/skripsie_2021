@@ -1,5 +1,5 @@
 #TODO: change points per face to be dynamic
-#TODO: rewrite source and target selection using pandas sampling
+#TODO: fix noise handling
 
 import numpy as np
 import pandas as pd
@@ -155,7 +155,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
         
 
     dist_df = dist_df.astype(int)
-    dist_df['dist'] = dist_df.apply(lambda row: distance(row.source, row.target, noise_percent), axis=1)
+    dist_df['dist'] = dist_df.apply(lambda row: distance(row.source, row.target, noise_percent, verbosity), axis=1)
     dist_df['changed'] = False
     
     error_num = int(len(dist_df.index)*(error_percent/100))
