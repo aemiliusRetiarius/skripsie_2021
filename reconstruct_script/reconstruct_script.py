@@ -235,7 +235,15 @@ if __name__ == '__main__':
 
     if filepath == None:
         dist_df = gen_dist_df(num_points, point_connections, noise_percentage, error_percentage, verbosity)
-        error, points = reconstruct(dist_df, projection, rotate, return_err_ord, return_points, verbosity)
+        
+        if return_err_ord == None and return_points == None:
+            reconstruct(dist_df, projection, rotate, return_err_ord, return_points, verbosity)
+        elif return_err_ord != None and return_points == None:
+            error = reconstruct(dist_df, projection, rotate, return_err_ord, return_points, verbosity)
+        elif return_err_ord == None and return_points != None:
+            points = reconstruct(dist_df, projection, rotate, return_err_ord, return_points, verbosity)
+        else:
+            error, points = reconstruct(dist_df, projection, rotate, return_err_ord, return_points, verbosity)
     else:
         error, points = reconstruct_file(filepath, projection, rotate, return_err_ord, return_points, verbosity)
     
