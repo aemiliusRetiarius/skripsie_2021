@@ -24,14 +24,14 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import alphashape as alsh
 
-def reconstruct_file(dist_csv_string, projection=None, rotate=True, return_err_ord=None, ret_points=None, verbosity=0):
+def reconstruct_file(dist_csv_string, projection=None, rotate=True, return_err_ord=None, ret_points=None, verbosity=0, parallel_num_str=''):
     dist_df = pd.read_csv(dist_csv_string)
     num_points = int(max(dist_df['source'].max(), dist_df['target'].max()))
     if verbosity > 0: print(">>>>>>>>>>>")
     if verbosity > 0: print("Reconstructing with", num_points, "points")
-    return reconstruct(dist_df, projection, rotate, return_err_ord, ret_points, verbosity)
+    return reconstruct(dist_df, projection, rotate, return_err_ord, ret_points, verbosity, parallel_num_str)
 
-def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points=None, verbosity=0):
+def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points=None, verbosity=0, parallel_num_str=''):
     
     num_points = int(max(dist_df['source'].max(), dist_df['target'].max()))
     if verbosity > 0: print(">>>>>>>>>>>")
@@ -58,7 +58,7 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
         mask_mat[target_index, source_index] = 1
 
     if verbosity > 0: print(">>>>>>>>>>>")
-    target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "edm_raw.mat")
+    target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "edm_raw" + parallel_num_str + ".mat")
     scipy.io.savemat(target_path, dict(dist_mat=dist_mat, mask_mat=mask_mat))
     if verbosity > 0: print(target_path)
     if verbosity > 0: print('Incomplete EDM Matrices saved')
@@ -78,7 +78,7 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
     if verbosity > 0: print('Script Complete')
 
     if verbosity > 0: print(">>>>>>>>>>>")
-    target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "recon_edm.mat")
+    target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "recon_edm" + parallel_num_str + ".mat")
     if verbosity > 0: print(target_path)
 
     edm = scipy.io.loadmat(target_path)
