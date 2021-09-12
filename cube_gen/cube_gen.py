@@ -110,95 +110,69 @@ def distance(a, b, percentage, verbosity=0):
     if verbosity > 3: print("noisy ", dist)
     return dist
 
+def check_reverse(target, source, dist_df):
+    if ((dist_df['target'] == source) & (dist_df['source'] == target)).any():
+        return True
+    else:
+        return False
+
+def iterate_connections(cons):
+    return cons + 1
+
 def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosity=0):
 
     if verbosity > 0: print(">>>>>>>>>>>")
     if verbosity > 0: print("Generating distance list...")
 
-    df = pd.DataFrame(columns=['source', 'target', 'dist', 'changed'])
+    con_data = {'point': list(range(1, num_points+1)), 'cons': [0]*num_points}
+    con_df = pd.DataFrame(data=con_data)
 
-    rand_target = randint(2, num_points) #was 98
-    new_row = {'source': 1, 'target': rand_target, 'dist': distance(1, rand_target, noise_percent/100), 'changed': False}
-    df = df.append(new_row, ignore_index=True)
+    dist_df = pd.DataFrame(columns=['source', 'target'])
 
-    for source in range(1, num_points):
-        total_cons = 0
-        if verbosity > 1: print("source: ", source)
-        while( total_cons < req_cons):
+    for con_index in range(num_points):
+        if verbosity > 1: print('Source point:', con_index+1)
 
-            #count source connections
-            try:
-                source_cons = df['source'].value_counts().loc[source]
-            except:
-                source_cons = 0
+        condition_1 = con_df.index != con_index
+        condition_2 = con_df['cons'] < req_cons
+        condition_3 = con_df['point'].apply(check_reverse, args=((con_index+1), dist_df,))
+        
+        valid_subset = con_df[condition_1 & condition_2 & (~condition_3)]
+        missing_cons = req_cons - con_df.iloc[con_index].cons
 
-            #count target connections
-            try:
-                target_cons = df['target'].value_counts().loc[source]
-            except:
-                target_cons = 0
+        
+        missing_cons = int(min(missing_cons, len(valid_subset.index)))
+        chosen_targets = valid_subset.sample(n = missing_cons)
+        if verbosity > 2: print("Chosen targets:", chosen_targets)
+        chosen_targets['cons'] = chosen_targets['cons'].apply(iterate_connections)
+        con_df.iloc[con_index].cons = con_df.iloc[con_index].cons+ missing_cons
+        con_df.update(chosen_targets)
 
-            #if total connections is enough, move to next point
-            total_cons = source_cons + target_cons
-            if verbosity > 2: print("cons: ", total_cons)
-            if(total_cons >= req_cons):
-                continue
-            
-            #find valid target
-            valid_target = False
-            iteration = 0
-            while (not valid_target) and iteration < 100:
-                rand_target = randint(1, num_points)
-                
-                #if targeting itself, continue
-                if rand_target == source:
-                    continue
-                #if connection already exists, continue
-                if ((df['source'] == source) & (df['target'] == rand_target)).any() == True:
-                    continue        
-                #if inverse connection already exists, continue
-                if ((df['source'] == rand_target) & (df['target'] == source)).any() == True:
-                    continue 
+        append_df = chosen_targets['point'].to_frame()
+        
+        append_df.rename(columns= {'point':'target'}, inplace=True)
+        append_df['source'] = con_index+1
+        dist_df = dist_df.append(append_df, ignore_index=True)
+        
 
-                #count target connections        
-                try:
-                    target_source_cons = df['source'].value_counts().loc[rand_target]
-                except:
-                    target_source_cons = 0
-
-                try:
-                    target_target_cons = df['target'].value_counts().loc[rand_target]
-                except:
-                    target_target_cons = 0
-                
-                #if target connections less than required, set it as a valid target
-                target_total_cons = target_source_cons + target_target_cons
-                if target_total_cons < req_cons:
-                    valid_target = True
-                
-                #iterate loop
-                iteration = iteration + 1
-            
-            if(iteration == 100):
-                if verbosity > 2 : print("iters reached")
-            new_row = {'source': source, 'target': rand_target, 'dist': distance(source, rand_target, noise_percent/100, verbosity), 'changed' : False}
-            df = df.append(new_row, ignore_index=True)
+    dist_df = dist_df.astype(int)
+    dist_df['dist'] = dist_df.apply(lambda row: distance(row.source, row.target, noise_percent), axis=1)
+    dist_df['changed'] = False
     
-    error_num = int(len(df.index)*(error_percent/100))
-    if verbosity > 0: print("Total number of records: ", int(len(df.index)))
+    error_num = int(len(dist_df.index)*(error_percent/100))
+    if verbosity > 0: print("Total number of records: ", int(len(dist_df.index)))
     
-    max_dist = df['dist'].max()
-    min_dist = df['dist'].min()
-    max_index = int(max(df['source'].max(), df['target'].max()))
-    min_index = int(min(df['source'].min(), df['target'].min()))
+    max_dist = dist_df['dist'].max()
+    min_dist = dist_df['dist'].min()
+    max_index = int(max(dist_df['source'].max(), dist_df['target'].max()))
+    min_index = int(min(dist_df['source'].min(), dist_df['target'].min()))
     
     if verbosity > 1: print("Index max:", max_index, "min:", min_index)
     if verbosity > 1: print("Distance max:", max_dist, "min:", min_dist)
 
     for _ in range(error_num):
         
-        condition = df['changed'] == False
-        sample = df[condition].sample(n=1)
+        condition = dist_df['changed'] == False
+        sample = dist_df[condition].sample(n=1)
         if verbosity > 2: print('Index of record changed:', sample.index.item())
         col_to_change = randrange(0,3)
 
@@ -208,7 +182,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
             new_source = randrange(min_index, max_index + 1)
             sample.source = new_source
             sample.changed = True
-            df.update(sample)
+            dist_df.update(sample)
             if verbosity > 3: print('New source:', new_source)
 
         elif col_to_change == 1:
@@ -217,7 +191,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
             new_target = randrange(min_index, max_index + 1)
             sample.target = new_target
             sample.changed = True
-            df.update(sample)
+            dist_df.update(sample)
             if verbosity > 3: print('New target:', new_target)
 
         else:
@@ -226,12 +200,12 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
             new_dist = uniform(min_dist, max_dist)
             sample.dist = new_dist
             sample.changed = True
-            df.update(sample)
+            dist_df.update(sample)
             if verbosity > 3: print('New distance: ', float(new_dist))
 
     if verbosity > 0 and error_num > 0: print("Number of records changed: ", error_num)
 
-    return df
+    return dist_df
 
 if(__name__ == '__main__'):
     df = gen_dist_df(98, 10)
