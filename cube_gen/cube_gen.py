@@ -106,7 +106,7 @@ def encode_point (a):
 def distance(a, b, percentage, verbosity=0):
     dist = np.linalg.norm(encode_point(a)-encode_point(b))
     if verbosity > 3: print("clean ", dist)
-    dist = np.random.normal(dist, dist * percentage * 0.28571428)
+    dist = np.random.normal(dist, dist * percentage/100 * 0.28571428)
     if verbosity > 3: print("noisy ", dist)
     return dist
 
