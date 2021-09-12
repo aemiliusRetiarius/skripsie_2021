@@ -24,14 +24,38 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 import alphashape as alsh
 
-def reconstruct_file(dist_csv_string, projection=None, rotate=True, return_err_ord=None, ret_points=None, verbosity=0, parallel_num_str=''):
+def execute_matlab_quiet(eng, parallel_num_str, out, err):
+    if parallel_num_str == '':
+        eng.matlab_connector(nargout=0,background=False,stdout=out,stderr=err)
+    elif parallel_num_str == '0':
+        eng.matlab_connector0(nargout=0,background=False,stdout=out,stderr=err)
+    elif parallel_num_str == '1':
+        eng.matlab_connector1(nargout=0,background=False,stdout=out,stderr=err)
+    elif parallel_num_str == '2':
+        eng.matlab_connector2(nargout=0,background=False,stdout=out,stderr=err)
+    elif parallel_num_str == '3':
+        eng.matlab_connector3(nargout=0,background=False,stdout=out,stderr=err)
+
+def execute_matlab(eng, parallel_num_str):
+    if parallel_num_str == '':
+        eng.matlab_connector(nargout=0)
+    elif parallel_num_str == '0':
+        eng.matlab_connector0(nargout=0)
+    elif parallel_num_str == '1':
+        eng.matlab_connector1(nargout=0)
+    elif parallel_num_str == '2':
+        eng.matlab_connector2(nargout=0)
+    elif parallel_num_str == '3':
+        eng.matlab_connector3(nargout=0)
+
+def reconstruct_file(dist_csv_string, projection=None, rotate=True, return_err_ord=None, ret_points=None, verbosity=0, parallel_num_str='', matlab_engine=None):
     dist_df = pd.read_csv(dist_csv_string)
     num_points = int(max(dist_df['source'].max(), dist_df['target'].max()))
     if verbosity > 0: print(">>>>>>>>>>>")
     if verbosity > 0: print("Reconstructing with", num_points, "points")
-    return reconstruct(dist_df, projection, rotate, return_err_ord, ret_points, verbosity, parallel_num_str)
+    return reconstruct(dist_df, projection, rotate, return_err_ord, ret_points, verbosity, parallel_num_str, matlab_engine)
 
-def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points=None, verbosity=0, parallel_num_str=''):
+def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points=None, verbosity=0, parallel_num_str='', matlab_engine=None):
     
     num_points = int(max(dist_df['source'].max(), dist_df['target'].max()))
     if verbosity > 0: print(">>>>>>>>>>>")
@@ -65,16 +89,21 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
     
     if verbosity > 0: print(">>>>>>>>>>>")
     if verbosity > 0: print('Connecting to Matlab...')
-    eng = matlab.engine.start_matlab()
-    eng.addpath(os.path.dirname(os.path.abspath(__file__)), nargout= 0 )
-    eng.addpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data"), nargout= 0 )
+    if matlab_engine == None:
+        eng = matlab.engine.start_matlab()
+        eng.addpath(os.path.dirname(os.path.abspath(__file__)), nargout= 0 )
+        eng.addpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data"), nargout= 0 )
+        eng.addpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "Connectors"), nargout= 0 )
+    else:
+        eng = matlab_engine
+
     if verbosity > 0: print('Script Starting')
     if verbosity < 2:
         out = io.StringIO()
         err = io.StringIO()
-        eng.matlab_connector(nargout=0,background=False,stdout=out,stderr=err)
+        execute_matlab_quiet(eng, parallel_num_str, out, err)
     else:
-        eng.matlab_connector(nargout=0)
+        execute_matlab(eng, parallel_num_str)
     if verbosity > 0: print('Script Complete')
 
     if verbosity > 0: print(">>>>>>>>>>>")
