@@ -17,25 +17,81 @@ from reconstruct_script import reconstruct
 import multiprocessing as mp
 import itertools
 
+import scipy.io
 import matplotlib.pyplot as plt
+from matplotlib import cm
+
 import time
 
 ###############
 ##Globals
 
 #intercon_axis = np.arange(5, 98, 2)
-intercon_start = 91
+intercon_start = 73
 intercon_end = 98
-intercon_step = 2
+intercon_step = 4
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
 
 error_start = 0
-error_end = 21
-error_step = 10
+error_end = 26
+error_step = 5
 error_axis = np.arange(error_start, error_end, error_step)
 
 noise_start = 0
 noise_end = 51
 noise_step = 5
 noise_axis = np.arange(noise_start, noise_end, noise_step)
+
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z.mat")
 ##############
+
+def get_err(index, intercon, error):
+    dist_df = gen_dist_df(98, intercon, error_percent=error)
+    err = reconstruct(dist_df, err_ord='rel', parallel_num_str=str(index))
+    return err
+
+def get_avg_err(intercon, error):
+    print("inter:", intercon, "err:", error)
+    inputs = [0, 1, 2, 3]
+    outputs = pool.starmap(get_err, zip(inputs, itertools.repeat(intercon), itertools.repeat(error)))
+    avg_err = sum(outputs) / 4
+
+    return avg_err
+
+def step_params(intercon_1_d, error_1_d):
+
+    zs = np.zeros(len(intercon_1_d))
+
+    for i in range(len(intercon_1_d)):
+        
+        zs[i] = get_avg_err(intercon_1_d[i], error_1_d[i])
+        
+    
+    return zs
+
+start_time = time.time()
+
+X, Y = np.meshgrid(intercon_axis, error_axis)
+
+pool = mp.Pool(processes=4)
+
+zs = np.array(step_params(np.ravel(X), np.ravel(Y)))
+Z = zs.reshape(X.shape)
+scipy.io.savemat(target_path, dict(Z=Z))
+#Z = scipy.io.loadmat(target_path)
+#Z = Z['Z']
+
+
+
+fig = plt.figure()
+ax = plt.axes(projection="3d")
+ax.plot_surface(X, Y, Z, cmap=cm.viridis)
+
+
+
+
+ax.set_xlabel('Interconnection')
+ax.set_ylabel('Record error %')
+ax.set_zlabel('Relative error')
+
+plt.show()
