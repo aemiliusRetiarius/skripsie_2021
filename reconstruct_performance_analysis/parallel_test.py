@@ -1,4 +1,3 @@
-from matplotlib.pyplot import get
 import numpy as np
 import pandas as pd
 
@@ -18,22 +17,24 @@ from reconstruct_script import reconstruct
 import matlab.engine
 
 import multiprocessing as mp
+import itertools
+
+import matplotlib.pyplot as plt
 
 import time
 
 ###############
 ##Globals
 
-interconnections = [30, 40, 50, 60]
+interconnections_list = []
+interconnections_list.extend(range(5, 98, 2))
+result_list = []
 
 
 ##############
 
-def double(index):
-    return interconnections[index]*2
-
-def get_err(index):
-    dist_df = gen_dist_df(98, interconnections[index])
+def get_err(index, intercon):
+    dist_df = gen_dist_df(98, intercon)
     err = reconstruct(dist_df, err_ord='rel', parallel_num_str=str(index))
     return err
 
@@ -67,16 +68,20 @@ root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #eng_list = [eng0, eng1, eng2, eng3]
 
 pool = mp.Pool(processes=4)
-inputs = [0, 1, 2, 3]
-outputs = pool.map(get_err, inputs)
 
-print(outputs)
+print(interconnections_list)
+for interconnect in interconnections_list:
+
+
+    inputs = [0, 1, 2, 3]
+    outputs = pool.starmap(get_err, zip(inputs, itertools.repeat(interconnect)))
+    #outputs2 = pool.starmap(get_err, zip(inputs, itertools.repeat(interconnect)))
+    #result_list.append((sum(outputs) + sum(outputs2)) / 8)
+    result_list.append(sum(outputs)/4)
 
 print("--- %s seconds ---" % (time.time() - start_time))
-start_time = time.time()
-print(get_err(0))
-print(get_err(1))
-print(get_err(2))
-print(get_err(3))
+print(result_list)
+plt.plot(interconnections_list, result_list)
+plt.show()
 
-print("--- %s seconds ---" % (time.time() - start_time))
+
