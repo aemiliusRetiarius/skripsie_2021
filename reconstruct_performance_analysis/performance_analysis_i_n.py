@@ -27,13 +27,13 @@ import time
 ##Globals
 
 #intercon_axis = np.arange(5, 98, 2)
-intercon_start = 1
+intercon_start = 93
 intercon_end = 98
 intercon_step = 4
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
 
-error_start = 0
-error_end = 101
+error_start = 80
+error_end = 161
 error_step = 4
 error_axis = np.arange(error_start, error_end, error_step)
 
