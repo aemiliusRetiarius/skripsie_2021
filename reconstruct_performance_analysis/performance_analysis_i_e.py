@@ -27,14 +27,14 @@ import time
 ##Globals
 
 #intercon_axis = np.arange(5, 98, 2)
-intercon_start = 73
+intercon_start = 1
 intercon_end = 98
 intercon_step = 4
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
 
 error_start = 0
-error_end = 26
-error_step = 5
+error_end = 101
+error_step = 4
 error_axis = np.arange(error_start, error_end, error_step)
 
 noise_start = 0
@@ -54,7 +54,9 @@ def get_avg_err(intercon, error):
     print("inter:", intercon, "err:", error)
     inputs = [0, 1, 2, 3]
     outputs = pool.starmap(get_err, zip(inputs, itertools.repeat(intercon), itertools.repeat(error)))
-    avg_err = sum(outputs) / 4
+    #outputs2 = pool.starmap(get_err, zip(inputs, itertools.repeat(intercon), itertools.repeat(error)))
+    #avg_err = (sum(outputs) + sum(outputs2)) / 8
+    avg_err = (sum(outputs)) / 4
 
     return avg_err
 
@@ -77,6 +79,9 @@ pool = mp.Pool(processes=4)
 
 zs = np.array(step_params(np.ravel(X), np.ravel(Y)))
 Z = zs.reshape(X.shape)
+
+print("--- %s seconds ---" % (time.time() - start_time))
+
 scipy.io.savemat(target_path, dict(Z=Z))
 #Z = scipy.io.loadmat(target_path)
 #Z = Z['Z']
