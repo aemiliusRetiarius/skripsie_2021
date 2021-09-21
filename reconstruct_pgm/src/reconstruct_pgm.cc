@@ -21,10 +21,45 @@ using namespace emdw;
 int main(int, char *argv[]) {
 
   // file pointer
-    fstream fout;
+  fstream fin;
+
+  vector<string> row;
+  string line, word;
   
-    // opens an existing csv file or creates a new file.
-    fout.open("../gaussian_data.csv", ios::out | ios::app);
-    fout << 0 << "," << 1 << "\n";
+  // opens an existing csv file or creates a new file.
+  fin.open("../../cube_gen/Data/dists.csv", ios::in);
+  cout << "opened file" <<endl;
+  
+  //remove first line with col names
+  getline(fin, line);
+  
+
+  while (getline(fin, line)) 
+  {
+  
+    row.clear();
+  
+    // read an entire row and
+    // store it in a string variable 'line'
+    //getline(fin, line);
+  
+    // used for breaking words
+    stringstream s(line);
+  
+    // read every column data of a row and
+    // store it in a string variable, 'word'
+    while (getline(s, word, ',')) 
+    {
+  
+      // add all the column data
+      // of a row to a vector
+      row.push_back(word);
+      cout << word << endl;
+      
+    }
+
+
+  }
+
 
 } // main
