@@ -208,5 +208,5 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
     return dist_df
 
 if(__name__ == '__main__'):
-    df = gen_dist_df(98, 10)
-    df.to_csv('.\cube_gen\dists_test_10_perc_noise.csv')
+    df = gen_dist_df(98, 5)
+    df.to_csv('dists.csv')
