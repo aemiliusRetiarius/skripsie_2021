@@ -29,7 +29,8 @@ int main(int, char *argv[]) {
   string line, word;
 
   // file input storage vectors
-  vector<double> inputSource, inputTarget, inputDist, sortedSource, sortedTarget;
+  vector<unsigned> inputSource, inputTarget, sortedSource, sortedTarget; 
+  vector<double> inputDist;
   vector<bool> inputChangedFlag;
   
   // opens an existing csv file or creates a new file.
@@ -64,8 +65,8 @@ int main(int, char *argv[]) {
     }
 
     // parse and add input file variables
-    inputSource.push_back(stod(row[1]));
-    inputTarget.push_back(stod(row[2]));
+    inputSource.push_back((unsigned)stod(row[1]));
+    inputTarget.push_back((unsigned)stod(row[2]));
     inputDist.push_back(stod(row[3]));
 
     bool parsedBool = (row[4].compare("True") == 1) ? true : false;
@@ -81,8 +82,21 @@ int main(int, char *argv[]) {
   sort(sortedSource.begin(), sortedSource.end());
   sort(sortedTarget.begin(), sortedTarget.end());
 
-  double numPoints = max(sortedSource.back(), sortedTarget.back());
+  unsigned numPoints = max(sortedSource.back(), sortedTarget.back());
   cout << "Num points: " << numPoints << endl;
+
+  // define random varibles
+  // for every point have x, y, z
+  // e.g. to find point i_y: (i-1)*3 +1
+  RVIds theVarsFull = {};
+  for(unsigned i = 0; i < 3*((unsigned)numPoints); i++)
+  {
+    theVarsFull.push_back(i);
+  }
+
+  vector< rcptr<Factor> > factors;
+
+  
 
 
 } // main
