@@ -29,7 +29,7 @@ int main(int, char *argv[]) {
   string line, word;
 
   // file input storage vectors
-  vector<double> inputSource, inputTarget, inputDist;
+  vector<double> inputSource, inputTarget, inputDist, sortedSource, sortedTarget;
   vector<bool> inputChangedFlag;
   
   // opens an existing csv file or creates a new file.
@@ -70,10 +70,19 @@ int main(int, char *argv[]) {
 
     bool parsedBool = (row[4].compare("True") == 1) ? true : false;
     inputChangedFlag.push_back(parsedBool);
-    
-
 
   }
+
+  // assume that there are no gaps in point numbering, possible improvement to handle it
+  // find max value in source and target to find number of points
+
+  sortedSource = inputSource;
+  sortedTarget = inputTarget;
+  sort(sortedSource.begin(), sortedSource.end());
+  sort(sortedTarget.begin(), sortedTarget.end());
+
+  double numPoints = max(sortedSource.back(), sortedTarget.back());
+  cout << "Num points: " << numPoints << endl;
 
 
 } // main
