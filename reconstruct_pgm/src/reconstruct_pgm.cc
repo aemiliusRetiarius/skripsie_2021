@@ -85,16 +85,43 @@ int main(int, char *argv[]) {
   unsigned numPoints = max(sortedSource.back(), sortedTarget.back());
   cout << "Num points: " << numPoints << endl;
 
+  // find number of records -> number of factors
+  unsigned numRecords = inputSource.size();
+  cout << "Num records: " << numRecords << endl;
+
   // define random varibles
   // for every point have x, y, z
   // e.g. to find point i_y: (i-1)*3 +1
   RVIds theVarsFull = {};
-  for(unsigned i = 0; i < 3*((unsigned)numPoints); i++)
+  for(unsigned i = 0; i < 3*(numPoints); i++)
   {
     theVarsFull.push_back(i);
   }
 
   vector< rcptr<Factor> > factors;
+
+  // create factors
+  RVIds theVarsSubset = {};
+  unsigned RVIndexBase = 0;
+  for(unsigned i = 0; i < numRecords; i++)
+  {
+    theVarsSubset.clear();
+
+    // add source x,y,z rvs to subset
+    RVIndexBase = 3*(inputSource[i] - 1);
+    theVarsSubset.push_back(RVIndexBase);
+    theVarsSubset.push_back(RVIndexBase+1);
+    theVarsSubset.push_back(RVIndexBase);
+
+    // add target x,y,z rvs to subset
+    RVIndexBase = 3*(inputSource[i] - 1);
+    theVarsSubset.push_back(RVIndexBase);
+    theVarsSubset.push_back(RVIndexBase+1);
+    theVarsSubset.push_back(RVIndexBase);
+
+
+
+  }
 
   
 
