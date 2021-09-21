@@ -6,6 +6,7 @@
 
 // standard headers
 #include <iostream>  // cout, endl, flush, cin, cerr
+#include <string>  // string, stod
 
 #include "discretetable.hpp"
 #include "prlite_zfstream.hpp"
@@ -23,14 +24,19 @@ int main(int, char *argv[]) {
   // file pointer
   fstream fin;
 
+  // file input handlers
   vector<string> row;
   string line, word;
+
+  // file input storage vectors
+  vector<double> inputSource, inputTarget, inputDist;
+  vector<bool> inputChangedFlag;
   
   // opens an existing csv file or creates a new file.
   fin.open("../../cube_gen/Data/dists.csv", ios::in);
   cout << "opened file" <<endl;
   
-  //remove first line with col names
+  // remove first line with col names
   getline(fin, line);
   
 
@@ -54,9 +60,17 @@ int main(int, char *argv[]) {
       // add all the column data
       // of a row to a vector
       row.push_back(word);
-      cout << word << endl;
       
     }
+
+    // parse and add input file variables
+    inputSource.push_back(stod(row[1]));
+    inputTarget.push_back(stod(row[2]));
+    inputDist.push_back(stod(row[3]));
+
+    bool parsedBool = (row[4].compare("True") == 1) ? true : false;
+    inputChangedFlag.push_back(parsedBool);
+    
 
 
   }
