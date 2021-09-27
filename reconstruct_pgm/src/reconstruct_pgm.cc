@@ -21,6 +21,7 @@ using namespace emdw;
 #include "emdw.hpp"
 #include "sqrtmvg.hpp"
 
+void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, double numRecords);
 RVIds getVariableSubset(unsigned pointNum, const vector<unsigned> &inputSource, const vector<unsigned> &inputTarget);
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2);
 
@@ -35,7 +36,7 @@ int main(int, char *argv[]) {
 
   // file input storage vectors
   vector<unsigned> inputSource, inputTarget, sortedSource, sortedTarget; 
-  vector<double> inputDist;
+  vector<AnyType> inputDist;
   vector<bool> inputChangedFlag;
   
   // opens an existing csv file or creates a new file.
@@ -113,30 +114,7 @@ int main(int, char *argv[]) {
   vector< rcptr<Factor> > factors;
   vector< rcptr<Factor> > old_factors;
 
-  // define initial gaussian parameters
-  prlite::ColVector<double> theMn(6);
-  prlite::RowMatrix<double> theCv(6,6);
-  theCv.assignToAll(0.0);
-
-  for(unsigned i = 0; i < 6; i++)
-  {
-    theMn[i] = 0.0;
-    theCv(i,i) = 1.0;
-  }
-
-  // create factors
-  RVIds theVarsSubset = {};
-  //unsigned RVIndexBase = 0;
-  for(unsigned i = 0; i < numRecords; i++)
-  {
-    // get variable subset of record
-    theVarsSubset = getVariableSubset(i, inputSource, inputTarget);
-
-    // construct gaussians and append to factor list
-    rcptr<SqrtMVG> pdfSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
-    rcptr<Factor> pdfPtr = pdfSGPtr;
-    factors.push_back(pdfPtr);
-  }
+  initialiseFactors(factors, inputSource, inputTarget, numRecords);
 
   // step through factors and add sigmapoints
   unsigned index = 0; 
@@ -176,13 +154,47 @@ int main(int, char *argv[]) {
   }
 
   //observe and reduce joint of reconsructed gaussians
-  rcptr<Factor> jointFactorPtr = absorb(factors)->observeAndReduce(theVarsDists, inputDists);
-  
+  rcptr<Factor> jointFactorPtr = absorb(factors);
+  jointFactorPtr = jointFactorPtr->observeAndReduce(theVarsDists, inputDist);
+  rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
+  //cout << inputDist << endl;
+  //cout << theVarsDists << endl;
+  cout << jointFactorSGPtr->getMean() << endl;
   //cout << *factors[2] << endl;
 
 
 
 } // main
+
+void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, double numRecords)
+{
+  // define initial gaussian parameters
+  prlite::ColVector<double> theMn(6);
+  prlite::RowMatrix<double> theCv(6,6);
+  theCv.assignToAll(0.0);
+
+  for(unsigned i = 0; i < 6; i++)
+  {
+    theMn[i] = 0.0;
+    theCv(i,i) = 1.0;
+  }
+
+  // create factors
+  RVIds theVarsSubset = {};
+  //unsigned RVIndexBase = 0;
+  for(unsigned i = 0; i < numRecords; i++)
+  {
+    // get variable subset of record
+    theVarsSubset = getVariableSubset(i, inputSource, inputTarget);
+
+    // construct gaussians and append to factor list
+    rcptr<SqrtMVG> pdfSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
+    rcptr<Factor> pdfPtr = pdfSGPtr;
+    factors.push_back(pdfPtr);
+  }
+  return;
+
+}
 
 RVIds getVariableSubset(unsigned factorNum, const vector<unsigned> &inputSource, const vector<unsigned> &inputTarget)
 {
