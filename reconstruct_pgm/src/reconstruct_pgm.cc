@@ -25,6 +25,7 @@ void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned>
 void initialiseVars(RVIds &theVarsFull, RVIds &theVarsDists, unsigned numPoints, unsigned numRecords);
 void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords);
 void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints);
+void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, vector<AnyType> inputDist, vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
 
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
 RVIds getVariableSubset(unsigned pointNum, const vector<unsigned> &inputSource, const vector<unsigned> &inputTarget);
@@ -71,11 +72,10 @@ int main(int, char *argv[]) {
 
   // reconstruct new factors with additional dimension for distance
   reconstructSigmaFactors(factors, old_factors, numPoints);
+  
+  // observe and reduce full joint, extract new factors using mean
+  extractNewFactors(factors, theVarsDists, inputDist, inputSource, inputTarget);
 
-  // observe and reduce joint of reconsructed gaussians
-  rcptr<Factor> jointFactorPtr = absorb(factors);
-  jointFactorPtr = jointFactorPtr->observeAndReduce(theVarsDists, inputDist);
-  rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
   //cout << inputDist << endl;
   //cout << theVarsDists << endl;
   //cout << jointFactorSGPtr->getMean() << endl;
@@ -219,6 +219,53 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
     // increment record index
     index++;
   }
+}
+
+// function will modify factors
+void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, vector<AnyType> inputDist, vector<unsigned> &inputSource, vector<unsigned> &inputTarget)
+{
+  // observe and reduce joint of reconsructed gaussians
+  unsigned numRecords = factors.size();
+  rcptr<Factor> jointFactorPtr = absorb(factors);
+  jointFactorPtr = jointFactorPtr->observeAndReduce(theVarsDists, inputDist);
+  rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
+
+  factors.clear(); // watch for aliasing issues with jointFactorPtr
+  
+  // extract mean from joint
+  prlite::ColVector<double> jointMean = jointFactorSGPtr->getMean();
+
+  // define new gaussian parameters
+  prlite::ColVector<double> theMn(6);
+  prlite::RowMatrix<double> theCv(6,6);
+  theCv.assignToAll(0.0);
+
+  for(unsigned i = 0; i < 6; i++)
+  {
+    theCv(i,i) = 1.0;
+  }
+
+  // create factors
+  RVIds theVarsSubset = {};
+  for(unsigned i = 0; i < numRecords; i++)
+  {
+    // get variable subset of record
+    theVarsSubset = getVariableSubset(i, inputSource, inputTarget);
+
+    // get mean from joint mean and variable subset
+    for(unsigned j = 0; j < 6; j++)
+    {
+      theMn[j] = jointMean[theVarsSubset[j]];
+    }
+
+    // construct gaussians and append to factor list
+    rcptr<SqrtMVG> pdfSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
+    rcptr<Factor> pdfPtr = pdfSGPtr;
+    factors.push_back(pdfPtr);
+  }
+
+  
+
 }
 
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget)
