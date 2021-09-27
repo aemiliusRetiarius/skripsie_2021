@@ -30,6 +30,7 @@ void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, ve
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
 RVIds getVariableSubset(unsigned pointNum, const vector<unsigned> &inputSource, const vector<unsigned> &inputTarget);
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2);
+double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors);
 
 int main(int, char *argv[]) {
 
@@ -76,6 +77,7 @@ int main(int, char *argv[]) {
   // observe and reduce full joint, extract new factors using mean
   extractNewFactors(factors, theVarsDists, inputDist, inputSource, inputTarget);
 
+  cout << getTotalMahanalobisDist(factors, old_factors) << endl;
   //cout << inputDist << endl;
   //cout << theVarsDists << endl;
   //cout << jointFactorSGPtr->getMean() << endl;
@@ -300,4 +302,17 @@ RVIds getVariableSubset(unsigned factorNum, const vector<unsigned> &inputSource,
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2)
 {
   return sqrt(x1*x1 + y1*y1 + z1*z1 + x2*x2 + y2*y2 + z2*z2);
+}
+
+double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors)
+{
+  double dist = 0;
+  for(unsigned i = 0; i < factors.size(); i++)
+  {
+    rcptr<SqrtMVG> factorSGPtr = dynamic_pointer_cast<SqrtMVG>(factors[i]);
+    rcptr<SqrtMVG> old_factorSGPtr = dynamic_pointer_cast<SqrtMVG>(old_factors[i]);
+    dist = dist + factorSGPtr->distance(&(*old_factors[i])); // pointer black magic
+  }
+
+  return dist;
 }
