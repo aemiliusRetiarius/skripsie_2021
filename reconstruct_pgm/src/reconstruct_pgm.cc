@@ -21,76 +21,31 @@ using namespace emdw;
 #include "emdw.hpp"
 #include "sqrtmvg.hpp"
 
+void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<AnyType> inputDist, vector<bool> inputChangedFlag);
 void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords);
 void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints);
 
+unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
 RVIds getVariableSubset(unsigned pointNum, const vector<unsigned> &inputSource, const vector<unsigned> &inputTarget);
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2);
 
 int main(int, char *argv[]) {
 
-  // file pointer
-  fstream fin;
-
-  // file input handlers
-  vector<string> row;
-  string line, word;
+  string fileString = "../../cube_gen/Data/dists.csv";
 
   // file input storage vectors
   vector<unsigned> inputSource, inputTarget, sortedSource, sortedTarget; 
   vector<AnyType> inputDist;
   vector<bool> inputChangedFlag;
   
-  // opens an existing csv file or creates a new file.
-  fin.open("../../cube_gen/Data/dists.csv", ios::in);
-  cout << "opened file" <<endl;
-  
-  // remove first line with col names
-  getline(fin, line);
-  
-
-  while (getline(fin, line)) 
-  {
-  
-    row.clear();
-  
-    // read an entire row and
-    // store it in a string variable 'line'
-    //getline(fin, line);
-  
-    // used for breaking words
-    stringstream s(line);
-  
-    // read every column data of a row and
-    // store it in a string variable, 'word'
-    while (getline(s, word, ',')) 
-    {
-  
-      // add all the column data
-      // of a row to a vector
-      row.push_back(word);
-      
-    }
-
-    // parse and add input file variables
-    inputSource.push_back((unsigned)stod(row[1]));
-    inputTarget.push_back((unsigned)stod(row[2]));
-    inputDist.push_back(stod(row[3]));
-
-    bool parsedBool = (row[4].compare("True") == 1) ? true : false;
-    inputChangedFlag.push_back(parsedBool);
-
-  }
+  // fill input storage vectors from file
+  readFile(fileString, inputSource, inputTarget, inputDist, inputChangedFlag);
 
   // assume that there are no gaps in point numbering, possible improvement to handle it
   // find max value in source and target to find number of points
 
-  sortedSource = inputSource;
-  sortedTarget = inputTarget;
-  sort(sortedSource.begin(), sortedSource.end());
-  sort(sortedTarget.begin(), sortedTarget.end());
-
-  unsigned numPoints = max(sortedSource.back(), sortedTarget.back());
+  unsigned numPoints = getNumPoints(inputSource, inputTarget);
+  
   cout << "Num points: " << numPoints << endl;
 
   // find number of records -> number of factors
@@ -132,6 +87,58 @@ int main(int, char *argv[]) {
 
 
 } // main
+
+// function will modify storage vectors
+void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<AnyType> inputDist, vector<bool> inputChangedFlag)
+{
+  // file pointer
+  fstream fin;
+
+  // file input handlers
+  vector<string> row;
+  string line, word;
+
+  // opens an existing csv file or creates a new file.
+  fin.open(fileString, ios::in);
+  cout << "opened file" <<endl;
+  
+  // remove first line with col names
+  getline(fin, line);
+  
+
+  while (getline(fin, line)) 
+  {
+  
+    row.clear();
+  
+    // read an entire row and
+    // store it in a string variable 'line'
+    //getline(fin, line);
+  
+    // used for breaking words
+    stringstream s(line);
+  
+    // read every column data of a row and
+    // store it in a string variable, 'word'
+    while (getline(s, word, ',')) 
+    {
+  
+      // add all the column data
+      // of a row to a vector
+      row.push_back(word);
+      
+    }
+
+    // parse and add input file variables
+    inputSource.push_back((unsigned)stod(row[1]));
+    inputTarget.push_back((unsigned)stod(row[2]));
+    inputDist.push_back(stod(row[3]));
+
+    bool parsedBool = (row[4].compare("True") == 1) ? true : false;
+    inputChangedFlag.push_back(parsedBool);
+
+  }
+}
 
 // function will modify factors
 void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords)
@@ -203,6 +210,18 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
     // increment record index
     index++;
   }
+}
+
+unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget)
+{
+  vector<unsigned> sortedSource, sortedTarget;
+
+  sortedSource = inputSource;
+  sortedTarget = inputTarget;
+  sort(sortedSource.begin(), sortedSource.end());
+  sort(sortedTarget.begin(), sortedTarget.end());
+
+  return max(sortedSource.back(), sortedTarget.back());
 }
 
 RVIds getVariableSubset(unsigned factorNum, const vector<unsigned> &inputSource, const vector<unsigned> &inputTarget)
