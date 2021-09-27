@@ -66,20 +66,20 @@ int main(int, char *argv[]) {
   vector< rcptr<Factor> > factors;
   vector< rcptr<Factor> > old_factors;
 
+  // initialise factors with input data
   initialiseFactors(factors, inputSource, inputTarget, numRecords);
 
+  // reconstruct new factors with additional dimension for distance
   reconstructSigmaFactors(factors, old_factors, numPoints);
 
-  //observe and reduce joint of reconsructed gaussians
+  // observe and reduce joint of reconsructed gaussians
   rcptr<Factor> jointFactorPtr = absorb(factors);
   jointFactorPtr = jointFactorPtr->observeAndReduce(theVarsDists, inputDist);
   rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
   //cout << inputDist << endl;
   //cout << theVarsDists << endl;
-  cout << jointFactorSGPtr->getMean() << endl;
+  //cout << jointFactorSGPtr->getMean() << endl;
   //cout << *factors[2] << endl;
-
-
 
 } // main
 
