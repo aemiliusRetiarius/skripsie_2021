@@ -3,7 +3,7 @@
 
 import numpy as np
 import pandas as pd
-from random import randint, uniform, randrange
+from random import uniform, randrange
 
 
 # Front Face: (5x5)
