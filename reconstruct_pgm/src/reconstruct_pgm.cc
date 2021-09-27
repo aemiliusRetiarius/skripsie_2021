@@ -35,6 +35,7 @@ double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<F
 int main(int, char *argv[]) {
 
   string fileString = "../../cube_gen/Data/dists.csv";
+  double tolerance = 0.1;
 
   // file input storage vectors
   vector<unsigned> inputSource, inputTarget, sortedSource, sortedTarget; 
@@ -71,12 +72,15 @@ int main(int, char *argv[]) {
   // initialise factors with input data
   initialiseFactors(factors, inputSource, inputTarget, numRecords);
 
+  do {
   // reconstruct new factors with additional dimension for distance
   reconstructSigmaFactors(factors, old_factors, numPoints);
   
   // observe and reduce full joint, extract new factors using mean
   extractNewFactors(factors, theVarsDists, inputDist, inputSource, inputTarget);
 
+  } while(getTotalMahanalobisDist(factors, old_factors) > tolerance);
+  
   cout << getTotalMahanalobisDist(factors, old_factors) << endl;
   //cout << inputDist << endl;
   //cout << theVarsDists << endl;
