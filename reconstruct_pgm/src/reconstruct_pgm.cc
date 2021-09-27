@@ -22,6 +22,7 @@ using namespace emdw;
 #include "sqrtmvg.hpp"
 
 void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<AnyType> inputDist, vector<bool> inputChangedFlag);
+void initialiseVars(RVIds &theVarsFull, RVIds &theVarsDists, unsigned numPoints, unsigned numRecords);
 void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords);
 void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints);
 
@@ -58,15 +59,9 @@ int main(int, char *argv[]) {
   // after 3d data, add rvs for distances
   RVIds theVarsFull = {};
   RVIds theVarsDists = {};
-  for(unsigned i = 0; i < 3*(numPoints); i++)
-  {
-    theVarsFull.push_back(i); // 3d rvs
-  }
-  for(unsigned i = 0; i < numRecords; i++)
-  {
-    theVarsFull.push_back(3*numPoints + i); // dist rvs
-    theVarsDists.push_back(3*numPoints + i);
-  }
+  
+  // fill rv vectors
+  initialiseVars(theVarsFull, theVarsDists, numPoints, numRecords);
 
   vector< rcptr<Factor> > factors;
   vector< rcptr<Factor> > old_factors;
@@ -137,6 +132,20 @@ void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned>
     bool parsedBool = (row[4].compare("True") == 1) ? true : false;
     inputChangedFlag.push_back(parsedBool);
 
+  }
+}
+
+// function will modify theVarsFull, theVarsDists
+void initialiseVars(RVIds &theVarsFull, RVIds &theVarsDists, unsigned numPoints, unsigned numRecords)
+{
+  for(unsigned i = 0; i < 3*(numPoints); i++)
+  {
+    theVarsFull.push_back(i); // 3d rvs
+  }
+  for(unsigned i = 0; i < numRecords; i++)
+  {
+    theVarsFull.push_back(3*numPoints + i); // dist rvs
+    theVarsDists.push_back(3*numPoints + i);
   }
 }
 
