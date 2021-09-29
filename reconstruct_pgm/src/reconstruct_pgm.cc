@@ -24,7 +24,7 @@ using namespace emdw;
 void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<AnyType> inputDist, vector<bool> inputChangedFlag);
 void initialiseVars(RVIds &theVarsFull, RVIds &theVarsDists, unsigned numPoints, unsigned numRecords);
 void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords);
-void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints);
+void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<AnyType> inputDist);
 void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, vector<AnyType> inputDist, vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
 
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
@@ -47,13 +47,12 @@ int main(int, char *argv[]) {
 
   // assume that there are no gaps in point numbering, possible improvement to handle it
   // find max value in source and target to find number of points
-
   unsigned numPoints = getNumPoints(inputSource, inputTarget);
   
-  cout << "Num points: " << numPoints << endl;
-
   // find number of records -> number of factors
   unsigned numRecords = inputSource.size();
+
+  cout << "Num points: " << numPoints << endl;
   cout << "Num records: " << numRecords << endl;
 
   // define random varibles
@@ -72,9 +71,11 @@ int main(int, char *argv[]) {
   // initialise factors with input data
   initialiseFactors(factors, inputSource, inputTarget, numRecords);
 
+  cout << *(factors[3]) << endl;
+
   do {
   // reconstruct new factors with additional dimension for distance
-  reconstructSigmaFactors(factors, old_factors, numPoints);
+  reconstructSigmaFactors(factors, old_factors, numPoints, inputDist);
   
   // observe and reduce full joint, extract new factors using mean
   extractNewFactors(factors, theVarsDists, inputDist, inputSource, inputTarget);
@@ -82,6 +83,7 @@ int main(int, char *argv[]) {
   } while(getTotalMahanalobisDist(factors, old_factors) > tolerance);
   
   cout << getTotalMahanalobisDist(factors, old_factors) << endl;
+
   //cout << inputDist << endl;
   //cout << theVarsDists << endl;
   //cout << jointFactorSGPtr->getMean() << endl;
@@ -158,7 +160,7 @@ void initialiseVars(RVIds &theVarsFull, RVIds &theVarsDists, unsigned numPoints,
 // function will modify factors
 void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords)
 {
-  // define initial gaussian parameters
+  // define initial gaussian parameters //mult gaussians*, larger cov, init grid
   prlite::ColVector<double> theMn(6);
   prlite::RowMatrix<double> theCv(6,6);
   theCv.assignToAll(0.0);
@@ -166,7 +168,7 @@ void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &input
   for(unsigned i = 0; i < 6; i++)
   {
     theMn[i] = 0.0;
-    theCv(i,i) = 1.0;
+    theCv(i,i) = 20.0;
   }
 
   // create factors
@@ -187,7 +189,7 @@ void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &input
 }
 
 // function will modify factors, old_factors
-void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints)
+void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<AnyType> inputDist)
 {
   // step through factors and add sigmapoints
   unsigned index = 0; 
@@ -216,6 +218,7 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
     
     // reconstruct new gaussian
     rcptr<SqrtMVG> pdfSigmaSGPtr(SqrtMVG::constructFromSigmaPoints(theVarsSubset, sigmaPoints, theVarsDist, sigmaPointsDists, sigmaPointsNoise));
+    pdfSigmaSGPtr = pdfSigmaSGPtr->observeAndReduce(theVarsDist, inputDist[index]);
     rcptr<Factor> pdfSigmaPtr = pdfSigmaSGPtr;
 
     // redefine factor and push into old factors
@@ -233,13 +236,12 @@ void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, ve
   // observe and reduce joint of reconsructed gaussians
   unsigned numRecords = factors.size();
   rcptr<Factor> jointFactorPtr = absorb(factors);
-  jointFactorPtr = jointFactorPtr->observeAndReduce(theVarsDists, inputDist);
-  rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
+  //obsv known points
 
   factors.clear(); // watch for aliasing issues with jointFactorPtr
   
   // extract mean from joint
-  prlite::ColVector<double> jointMean = jointFactorSGPtr->getMean();
+  prlite::ColVector<double> jointMean = jointFactorSGPtr->getMean(); //marginalize for points to 6d, test cov with 3
 
   // define new gaussian parameters
   prlite::ColVector<double> theMn(6);
@@ -305,10 +307,10 @@ RVIds getVariableSubset(unsigned factorNum, const vector<unsigned> &inputSource,
 
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2)
 {
-  return sqrt(x1*x1 + y1*y1 + z1*z1 + x2*x2 + y2*y2 + z2*z2);
+  return sqrt(x1*x1 + y1*y1 + z1*z1 + x2*x2 + y2*y2 + z2*z2); //FIX
 }
 
-double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors)
+double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors) //check if mahanalobis only check means, use Kuback liebler
 {
   double dist = 0;
   for(unsigned i = 0; i < factors.size(); i++)
