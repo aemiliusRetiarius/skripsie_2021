@@ -389,7 +389,7 @@ vector<double> getStartingPos(unsigned pointNum)
 rcptr<Factor> getObsFactor(unsigned factorNum, const gaussian_pgm &gpgm)
 {
   // find observed half of full factor and return it
-  unsigned obsNum, obsIndex = 0;
+  unsigned obsIndex = 0;
   for(unsigned obsPoint : gpgm.obsPoints)
   {
     if((obsPoint == gpgm.inputSource[factorNum])||(obsPoint == gpgm.inputTarget[factorNum]))
