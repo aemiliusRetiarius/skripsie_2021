@@ -22,6 +22,7 @@ using namespace emdw;
 #include "sqrtmvg.hpp"
 
 void readDataFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<double> &inputDist, vector<bool> inputChangedFlag);
+void readObsFile(string fileString, vector<unsigned> &obsPoints, vector<double> &obsPos);
 void initialiseVars(RVIds &theVarsFull, RVIds &theVarsDists, unsigned numPoints, unsigned numRecords);
 void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords);
 void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<double> &inputDist);
@@ -34,17 +35,20 @@ double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<F
 
 int main(int, char *argv[]) {
 
-  string fileString = "../../cube_gen/Data/dists.csv";
+  string dataString = "../../cube_gen/Data/dists.csv";
+  string obsString = "../../cube_gen/Data/obs.csv";
   double tolerance = 0.1;
 
   // file input storage vectors
-  vector<unsigned> inputSource, inputTarget; 
-  vector<double> inputDist;
+  vector<unsigned> inputSource, inputTarget, obsPoints; 
+  vector<double> inputDist, obsPos;
   vector<bool> inputChangedFlag;
   
   // fill input storage vectors from file
-  readDataFile(fileString, inputSource, inputTarget, inputDist, inputChangedFlag);
-
+  readDataFile(dataString, inputSource, inputTarget, inputDist, inputChangedFlag);
+  cout << "Opened data file" << endl;
+  readObsFile(obsString, obsPoints, obsPos);
+  cout << "Opened observations file" <<  endl;
   // assume that there are no gaps in point numbering, possible improvement to handle it
   // find max value in source and target to find number of points
   unsigned numPoints = getNumPoints(inputSource, inputTarget);
@@ -137,6 +141,49 @@ void readDataFile(string fileString, vector<unsigned> &inputSource, vector<unsig
     bool parsedBool = (row[4].compare("True") == 1) ? true : false;
     inputChangedFlag.push_back(parsedBool);
 
+  }
+}
+
+void readObsFile(string fileString, vector<unsigned> &obsPoints, vector<double> &obsPos)
+{
+  // file pointer
+  fstream fin;
+
+  // file input handlers
+  string line, word;
+
+  // opens an existing csv file or creates a new file.
+  fin.open(fileString, ios::in);
+  
+  // remove first line
+  getline(fin, line);
+  
+  // get obs points
+  getline(fin, line);
+  stringstream s(line);
+  while (getline(s, word, ',')) 
+  {
+    // parse and add point num to a vector
+    obsPoints.push_back((unsigned)stod(word));   
+  }
+  // remove next line
+  getline(fin, line);
+
+  // read remaining lines and add to obs pos
+  while (getline(fin, line)) 
+  {
+  
+    // used for breaking words
+    stringstream s(line);
+  
+    // read every column data of a row and
+    // store it in a string variable, 'word'
+    while (getline(s, word, ',')) 
+    {
+  
+      obsPos.push_back(stod(word));
+      
+    }
   }
 }
 
