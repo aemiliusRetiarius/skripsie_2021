@@ -67,7 +67,7 @@ int main(int, char *argv[]) {
 
   string dataString = "../../cube_gen/Data/dists.csv";
   string obsString = "../../cube_gen/Data/obs.csv";
-  double tolerance = 0.1;
+  double tolerance = 1;
 
   gaussian_pgm pgm1;
   
@@ -94,16 +94,18 @@ int main(int, char *argv[]) {
   // initialise factors with input data
   initialiseFactors(pgm1);
 
-  //do {
+  do {
   // reconstruct new factors with additional dimension for distance
   reconstructSigmaFactors(pgm1);
   
   // observe and reduce full joint, extract new factors using mean
   extractNewFactors(pgm1);
 
-  //} while(getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) > tolerance);
-  
   cout << "total diff dist: " << getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) << endl;
+
+  } while(getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) > tolerance);
+  
+
 
 } // main
 
@@ -229,7 +231,7 @@ void initialiseFactors(gaussian_pgm &gpgm)
   prlite::ColVector<double> theMn(6);
   prlite::RowMatrix<double> theCv(6,6);
   theCv.assignToAll(0.0);
-
+  
   for(unsigned i = 0; i < 6; i++)
   {
     theCv(i,i) = 30.0;
@@ -257,6 +259,7 @@ void initialiseFactors(gaussian_pgm &gpgm)
     rcptr<Factor> pdfPtr = pdfSGPtr;
     gpgm.factors.push_back(pdfPtr);
   }
+  //cout << *gpgm.factors[60] << endl;
   return;
 
 }
@@ -268,6 +271,8 @@ void reconstructSigmaFactors(gaussian_pgm &gpgm)
   // step through factors and add sigmapoints
   unsigned index = 0; 
   gpgm.old_factors.clear();
+  vector< rcptr<Factor> > new_factors;
+
   for(rcptr<Factor> factor : gpgm.factors)
   {
     // 6 x 13 matrix of sigma points
@@ -299,11 +304,13 @@ void reconstructSigmaFactors(gaussian_pgm &gpgm)
 
     // redefine factor and push into old factors
     gpgm.old_factors.push_back(factor);
-    factor = pdfSigmaPtr;
+    new_factors.push_back(pdfSigmaPtr);
 
     // increment record index
     index++;
   }
+  gpgm.factors = new_factors;
+  
 }
 
 // function will modify factors
@@ -312,8 +319,8 @@ void extractNewFactors(gaussian_pgm &gpgm)
   // observe and reduce joint of reconsructed gaussians
   rcptr<Factor> jointFactorPtr = absorb(gpgm.factors);
   jointFactorPtr = jointFactorPtr->observeAndReduce(gpgm.theVarsObs, gpgm.obsPos)->normalize(); //obsv individual
-  rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
   
+  rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
   //gpgm.factors.clear(); // watch for aliasing issues with jointFactorPtr
   // step through factors to extract new gaussians by marginalizing joint gaussians
   unsigned index = 0;
@@ -325,16 +332,23 @@ void extractNewFactors(gaussian_pgm &gpgm)
     if(find(gpgm.theVarsObs.begin(), gpgm.theVarsObs.end(), theVarsSubset[0]) != gpgm.theVarsObs.end())
     {
       // get known gaussian
-      // pass index
+      obsFactor = getObsFactor(index, gpgm);
       // get unobserved half of factor
       theVarsSubset = {theVarsSubset[3], theVarsSubset[4], theVarsSubset[5]};
       unobsFactor = jointFactorPtr->marginalize(theVarsSubset)->normalize();
+      // mult halves to get new factor
       factor = obsFactor->absorb(unobsFactor)->normalize();
 
     }
     else if(find(gpgm.theVarsObs.begin(), gpgm.theVarsObs.end(), theVarsSubset[3]) != gpgm.theVarsObs.end())
     {
-
+      // get known gaussian
+      obsFactor = getObsFactor(index, gpgm);
+      // get unobserved half of factor
+      theVarsSubset = {theVarsSubset[0], theVarsSubset[1], theVarsSubset[2]};
+      unobsFactor = jointFactorPtr->marginalize(theVarsSubset)->normalize();
+      // mult halves to get new factor
+      factor = obsFactor->absorb(unobsFactor)->normalize();
     }
     else
     {
@@ -344,6 +358,7 @@ void extractNewFactors(gaussian_pgm &gpgm)
     }
     index++;
   }
+  //cout << *gpgm.factors[60] << endl;
 }
 
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget)
