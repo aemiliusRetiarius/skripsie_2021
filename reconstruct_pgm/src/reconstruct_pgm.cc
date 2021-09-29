@@ -21,7 +21,7 @@ using namespace emdw;
 #include "emdw.hpp"
 #include "sqrtmvg.hpp"
 
-void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<double> &inputDist, vector<bool> inputChangedFlag);
+void readDataFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<double> &inputDist, vector<bool> inputChangedFlag);
 void initialiseVars(RVIds &theVarsFull, RVIds &theVarsDists, unsigned numPoints, unsigned numRecords);
 void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords);
 void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<double> &inputDist);
@@ -38,16 +38,13 @@ int main(int, char *argv[]) {
   double tolerance = 0.1;
 
   // file input storage vectors
-  vector<unsigned> inputSource, inputTarget, sortedSource, sortedTarget; 
+  vector<unsigned> inputSource, inputTarget; 
   vector<double> inputDist;
   vector<bool> inputChangedFlag;
   
-  cout << inputDist << endl;
-  cout << inputSource << endl;
   // fill input storage vectors from file
-  readFile(fileString, inputSource, inputTarget, inputDist, inputChangedFlag);
-  cout << inputSource << endl;
-  cout << inputDist << endl;
+  readDataFile(fileString, inputSource, inputTarget, inputDist, inputChangedFlag);
+
   // assume that there are no gaps in point numbering, possible improvement to handle it
   // find max value in source and target to find number of points
   unsigned numPoints = getNumPoints(inputSource, inputTarget);
@@ -93,7 +90,7 @@ int main(int, char *argv[]) {
 } // main
 
 // function will modify storage vectors
-void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<double> &inputDist, vector<bool> inputChangedFlag)
+void readDataFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<double> &inputDist, vector<bool> inputChangedFlag)
 {
   // file pointer
   fstream fin;
@@ -104,7 +101,6 @@ void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned>
 
   // opens an existing csv file or creates a new file.
   fin.open(fileString, ios::in);
-  cout << "opened file" <<endl;
   
   // remove first line with col names
   getline(fin, line);
