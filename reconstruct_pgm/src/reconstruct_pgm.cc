@@ -56,9 +56,11 @@ void reconstructSigmaFactors(gaussian_pgm &gpgm);
 void extractNewFactors(gaussian_pgm &gpgm);
 
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
-RVIds getVariableSubset(unsigned pointNum, const vector<unsigned> &inputSource, const vector<unsigned> &inputTarget);
+RVIds getVariableSubset(unsigned factorNum, const gaussian_pgm &gpgm);
+vector<double> getStartingPos(unsigned pointNum);
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2);
 double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors);
+
 
 int main(int, char *argv[]) {
 
@@ -90,21 +92,16 @@ int main(int, char *argv[]) {
   // initialise factors with input data
   initialiseFactors(pgm1);
 
-  do {
+  //do {
   // reconstruct new factors with additional dimension for distance
   reconstructSigmaFactors(pgm1);
   
   // observe and reduce full joint, extract new factors using mean
   extractNewFactors(pgm1);
 
-  } while(getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) > tolerance);
+  //} while(getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) > tolerance);
   
   cout << "total diff dist: " << getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) << endl;
-
-  //cout << inputDist << endl;
-  //cout << theVarsDists << endl;
-  //cout << jointFactorSGPtr->getMean() << endl;
-  //cout << *factors[2] << endl;
 
 } // main
 
@@ -233,18 +230,26 @@ void initialiseFactors(gaussian_pgm &gpgm)
 
   for(unsigned i = 0; i < 6; i++)
   {
-    theMn[i] = 0.0;
-    theCv(i,i) = 20.0;
+    theCv(i,i) = 30.0;
   }
 
   // create factors
   RVIds theVarsSubset = {};
+  vector<double> sourcePos = {};
+  vector<double> targetPos = {};
   //unsigned RVIndexBase = 0;
   for(unsigned i = 0; i < gpgm.numRecords; i++)
   {
     // get variable subset of record
-    theVarsSubset = getVariableSubset(i, gpgm.inputSource, gpgm.inputTarget);
-
+    theVarsSubset = getVariableSubset(i, gpgm);
+    // get starting positions of variables and fill mean
+    sourcePos = getStartingPos(gpgm.inputSource[i]-1);
+    targetPos = getStartingPos(gpgm.inputTarget[i]-1); 
+    for(unsigned j = 0; j < 3; j++)
+    {
+      theMn[j] = sourcePos[j];
+      theMn[3+j] = targetPos[j];
+    }
     // construct gaussians and append to factor list
     rcptr<SqrtMVG> pdfSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
     rcptr<Factor> pdfPtr = pdfSGPtr;
@@ -304,14 +309,14 @@ void extractNewFactors(gaussian_pgm &gpgm)
 {
   // observe and reduce joint of reconsructed gaussians
   rcptr<Factor> jointFactorPtr = absorb(gpgm.factors);
-  jointFactorPtr = jointFactorPtr->observeAndReduce(gpgm.theVarsObs, gpgm.obsPos); //obsv individual
+  jointFactorPtr = jointFactorPtr->observeAndReduce(gpgm.theVarsObs, gpgm.obsPos)->normalize(); //obsv individual
   rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
-
+  
   gpgm.factors.clear(); // watch for aliasing issues with jointFactorPtr
   
   // extract mean from joint
   prlite::ColVector<double> jointMean = jointFactorSGPtr->getMean(); //marginalize for points to 6d, test cov with 3
-
+  cout << jointMean << endl;
   // define new gaussian parameters
   prlite::ColVector<double> theMn(6);
   prlite::RowMatrix<double> theCv(6,6);
@@ -327,7 +332,7 @@ void extractNewFactors(gaussian_pgm &gpgm)
   for(unsigned i = 0; i < gpgm.numRecords; i++)
   {
     // get variable subset of record
-    theVarsSubset = getVariableSubset(i, gpgm.inputSource, gpgm.inputTarget);
+    theVarsSubset = getVariableSubset(i, gpgm);
 
     // get mean from joint mean and variable subset
     for(unsigned j = 0; j < 6; j++)
@@ -357,21 +362,32 @@ unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarg
   return max(sortedSource.back(), sortedTarget.back());
 }
 
-RVIds getVariableSubset(unsigned factorNum, const vector<unsigned> &inputSource, const vector<unsigned> &inputTarget)
+RVIds getVariableSubset(unsigned factorNum, const gaussian_pgm &gpgm)
 {
   RVIds theVarsSubset = {};
 
-  unsigned RVIndexBase = 3*(inputSource[factorNum] - 1);
+  unsigned RVIndexBase = 3*(gpgm.inputSource[factorNum] - 1);
   theVarsSubset.push_back(RVIndexBase);
   theVarsSubset.push_back(RVIndexBase+1);
   theVarsSubset.push_back(RVIndexBase+2);
 
-  RVIndexBase = 3*(inputTarget[factorNum] - 1);
+  RVIndexBase = 3*(gpgm.inputTarget[factorNum] - 1);
   theVarsSubset.push_back(RVIndexBase);
   theVarsSubset.push_back(RVIndexBase+1);
   theVarsSubset.push_back(RVIndexBase+2);
 
   return theVarsSubset;
+}
+
+vector<double> getStartingPos(unsigned pointNum)
+{
+  // vector contains starting {x, y, z}
+  vector<double> pos = {};
+  pos.push_back((double)(pointNum % 10)*10);
+  pos.push_back((double)(pointNum / 10)*10);
+  pos.push_back((double) 0); //init grid om x-y plane
+
+  return pos;
 }
 
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2)
