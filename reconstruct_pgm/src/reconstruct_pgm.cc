@@ -21,12 +21,39 @@ using namespace emdw;
 #include "emdw.hpp"
 #include "sqrtmvg.hpp"
 
-void readDataFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<double> &inputDist, vector<bool> inputChangedFlag);
-void readObsFile(string fileString, vector<unsigned> &obsPoints, vector<double> &obsPos);
-void initialiseVars(RVIds &theVarsFull, RVIds &theVarsDists, unsigned numPoints, unsigned numRecords);
-void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords);
-void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<double> &inputDist);
-void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, vector<double> inputDist, vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
+struct gaussian_pgm {
+  // file input storage vectors
+  vector<unsigned> inputSource, inputTarget, obsPoints; 
+  vector<double> inputDist;
+  vector<AnyType> obsPos;
+  vector<bool> inputChangedFlag;
+
+  // assume that there are no gaps in point numbering, possible improvement to handle it
+  // find max value in source and target to find number of points
+  unsigned numPoints = 0;
+  // find number of records -> number of factors
+  unsigned numRecords = 0;
+
+  // define random varibles
+  // for every point have x, y, z
+  // e.g. to find point i_y: (i-1)*3 +1
+  // after 3d data, add rvs for distances
+  RVIds theVarsFull = {};
+  RVIds theVarsObs = {};
+  RVIds theVarsDists = {};
+
+  // define factors
+  vector< rcptr<Factor> > factors;
+  vector< rcptr<Factor> > old_factors;
+
+};
+
+void readDataFile(string fileString, gaussian_pgm &gpgm);
+void readObsFile(string fileString, gaussian_pgm &gpgm);
+void initialiseVars(gaussian_pgm &gpgm);
+void initialiseFactors(gaussian_pgm &gpgm);
+void reconstructSigmaFactors(gaussian_pgm &gpgm);
+void extractNewFactors(gaussian_pgm &gpgm);
 
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
 RVIds getVariableSubset(unsigned pointNum, const vector<unsigned> &inputSource, const vector<unsigned> &inputTarget);
@@ -39,52 +66,40 @@ int main(int, char *argv[]) {
   string obsString = "../../cube_gen/Data/obs.csv";
   double tolerance = 0.1;
 
-  // file input storage vectors
-  vector<unsigned> inputSource, inputTarget, obsPoints; 
-  vector<double> inputDist, obsPos;
-  vector<bool> inputChangedFlag;
+  gaussian_pgm pgm1;
+  
   
   // fill input storage vectors from file
-  readDataFile(dataString, inputSource, inputTarget, inputDist, inputChangedFlag);
+  readDataFile(dataString, pgm1);
   cout << "Opened data file" << endl;
-  readObsFile(obsString, obsPoints, obsPos);
+  readObsFile(obsString, pgm1);
   cout << "Opened observations file" <<  endl;
   // assume that there are no gaps in point numbering, possible improvement to handle it
   // find max value in source and target to find number of points
-  unsigned numPoints = getNumPoints(inputSource, inputTarget);
+  pgm1.numPoints = getNumPoints(pgm1.inputSource, pgm1.inputTarget);
   
   // find number of records -> number of factors
-  unsigned numRecords = inputSource.size();
+  pgm1.numRecords = pgm1.inputSource.size();
 
-  cout << "Num points: " << numPoints << endl;
-  cout << "Num records: " << numRecords << endl;
-
-  // define random varibles
-  // for every point have x, y, z
-  // e.g. to find point i_y: (i-1)*3 +1
-  // after 3d data, add rvs for distances
-  RVIds theVarsFull = {};
-  RVIds theVarsDists = {};
+  cout << "Num points: " << pgm1.numPoints << endl;
+  cout << "Num records: " << pgm1.numRecords << endl;
   
   // fill rv vectors
-  initialiseVars(theVarsFull, theVarsDists, numPoints, numRecords);
-
-  vector< rcptr<Factor> > factors;
-  vector< rcptr<Factor> > old_factors;
+  initialiseVars(pgm1);
 
   // initialise factors with input data
-  initialiseFactors(factors, inputSource, inputTarget, numRecords);
+  initialiseFactors(pgm1);
 
   do {
   // reconstruct new factors with additional dimension for distance
-  reconstructSigmaFactors(factors, old_factors, numPoints, inputDist);
+  reconstructSigmaFactors(pgm1);
   
   // observe and reduce full joint, extract new factors using mean
-  extractNewFactors(factors, theVarsDists, inputDist, inputSource, inputTarget);
+  extractNewFactors(pgm1);
 
-  } while(getTotalMahanalobisDist(factors, old_factors) > tolerance);
+  } while(getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) > tolerance);
   
-  cout << "total diff dist: " << getTotalMahanalobisDist(factors, old_factors) << endl;
+  cout << "total diff dist: " << getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) << endl;
 
   //cout << inputDist << endl;
   //cout << theVarsDists << endl;
@@ -94,7 +109,7 @@ int main(int, char *argv[]) {
 } // main
 
 // function will modify storage vectors
-void readDataFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<double> &inputDist, vector<bool> inputChangedFlag)
+void readDataFile(string fileString, gaussian_pgm &gpgm)
 {
   // file pointer
   fstream fin;
@@ -134,17 +149,18 @@ void readDataFile(string fileString, vector<unsigned> &inputSource, vector<unsig
     }
 
     // parse and add input file variables
-    inputSource.push_back((unsigned)stod(row[1]));
-    inputTarget.push_back((unsigned)stod(row[2]));
-    inputDist.push_back(stod(row[3]));
+    gpgm.inputSource.push_back((unsigned)stod(row[1]));
+    gpgm.inputTarget.push_back((unsigned)stod(row[2]));
+    gpgm.inputDist.push_back(stod(row[3]));
 
     bool parsedBool = (row[4].compare("True") == 1) ? true : false;
-    inputChangedFlag.push_back(parsedBool);
+    gpgm.inputChangedFlag.push_back(parsedBool);
 
   }
 }
 
-void readObsFile(string fileString, vector<unsigned> &obsPoints, vector<double> &obsPos)
+//function will modify storage vectors
+void readObsFile(string fileString, gaussian_pgm &gpgm)
 {
   // file pointer
   fstream fin;
@@ -164,7 +180,7 @@ void readObsFile(string fileString, vector<unsigned> &obsPoints, vector<double> 
   while (getline(s, word, ',')) 
   {
     // parse and add point num to a vector
-    obsPoints.push_back((unsigned)stod(word));   
+    gpgm.obsPoints.push_back((unsigned)stod(word));   
   }
   // remove next line
   getline(fin, line);
@@ -181,28 +197,34 @@ void readObsFile(string fileString, vector<unsigned> &obsPoints, vector<double> 
     while (getline(s, word, ',')) 
     {
   
-      obsPos.push_back(stod(word));
+      gpgm.obsPos.push_back(stod(word));
       
     }
   }
 }
 
-// function will modify theVarsFull, theVarsDists
-void initialiseVars(RVIds &theVarsFull, RVIds &theVarsDists, unsigned numPoints, unsigned numRecords)
+// function will modify theVarsFull, theVarsObs, theVarsDists
+void initialiseVars(gaussian_pgm &gpgm)
 {
-  for(unsigned i = 0; i < 3*(numPoints); i++)
+  for(unsigned i = 0; i < 3*(gpgm.numPoints); i++)
   {
-    theVarsFull.push_back(i); // 3d rvs
+    gpgm.theVarsFull.push_back(i); // 3d rvs
   }
-  for(unsigned i = 0; i < numRecords; i++)
+  for(unsigned i = 0; i < gpgm.numRecords; i++)
   {
-    theVarsFull.push_back(3*numPoints + i); // dist rvs
-    theVarsDists.push_back(3*numPoints + i);
+    gpgm.theVarsFull.push_back(3*gpgm.numPoints + i); // dist rvs
+    gpgm.theVarsDists.push_back(3*gpgm.numPoints + i);
+  }
+  for(unsigned obsPoint : gpgm.obsPoints)
+  {
+    gpgm.theVarsObs.push_back((obsPoint-1)*3); // obs rvs
+    gpgm.theVarsObs.push_back((obsPoint-1)*3 + 1);
+    gpgm.theVarsObs.push_back((obsPoint-1)*3 + 2);
   }
 }
 
 // function will modify factors
-void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords)
+void initialiseFactors(gaussian_pgm &gpgm)
 {
   // define initial gaussian parameters //mult gaussians*, larger cov, init grid
   prlite::ColVector<double> theMn(6);
@@ -218,28 +240,28 @@ void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &input
   // create factors
   RVIds theVarsSubset = {};
   //unsigned RVIndexBase = 0;
-  for(unsigned i = 0; i < numRecords; i++)
+  for(unsigned i = 0; i < gpgm.numRecords; i++)
   {
     // get variable subset of record
-    theVarsSubset = getVariableSubset(i, inputSource, inputTarget);
+    theVarsSubset = getVariableSubset(i, gpgm.inputSource, gpgm.inputTarget);
 
     // construct gaussians and append to factor list
     rcptr<SqrtMVG> pdfSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
     rcptr<Factor> pdfPtr = pdfSGPtr;
-    factors.push_back(pdfPtr);
+    gpgm.factors.push_back(pdfPtr);
   }
   return;
 
 }
 
 // function will modify factors, old_factors
-void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<double> &inputDist)
+void reconstructSigmaFactors(gaussian_pgm &gpgm)
 {
   cout << "starting reconstruction..." << endl;
   // step through factors and add sigmapoints
   unsigned index = 0; 
-  old_factors.clear();
-  for(rcptr<Factor> factor : factors)
+  gpgm.old_factors.clear();
+  for(rcptr<Factor> factor : gpgm.factors)
   {
     // 6 x 13 matrix of sigma points
     prlite::ColMatrix<double> sigmaPoints = dynamic_pointer_cast<SqrtMVG>(factor)->getSigmaPoints();
@@ -260,8 +282,8 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
 
     
     // define dist rv
-    RVIds theVarsDist = {3*numPoints + index};
-    RVVals theDist = {inputDist[index]};
+    RVIds theVarsDist = {3*gpgm.numPoints + index};
+    RVVals theDist = {gpgm.inputDist[index]};
     
     // reconstruct new gaussian
     rcptr<SqrtMVG> pdfSigmaSGPtr(SqrtMVG::constructFromSigmaPoints(theVarsSubset, sigmaPoints, theVarsDist, sigmaPointsDists, sigmaPointsNoise));
@@ -269,7 +291,7 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
     pdfSigmaPtr = pdfSigmaPtr->observeAndReduce(theVarsDist, theDist)->normalize();
 
     // redefine factor and push into old factors
-    old_factors.push_back(factor);
+    gpgm.old_factors.push_back(factor);
     factor = pdfSigmaPtr;
 
     // increment record index
@@ -278,17 +300,14 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
 }
 
 // function will modify factors
-void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, vector<double> inputDist, vector<unsigned> &inputSource, vector<unsigned> &inputTarget)
+void extractNewFactors(gaussian_pgm &gpgm)
 {
   // observe and reduce joint of reconsructed gaussians
-  unsigned numRecords = factors.size();
-  rcptr<Factor> jointFactorPtr = absorb(factors);
-  //obsv known points
-
-  //jointFactorPtr = jointFactorPtr->observeAndReduce(theVarsDists, inputDist); //obsv individual
+  rcptr<Factor> jointFactorPtr = absorb(gpgm.factors);
+  jointFactorPtr = jointFactorPtr->observeAndReduce(gpgm.theVarsObs, gpgm.obsPos); //obsv individual
   rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
 
-  factors.clear(); // watch for aliasing issues with jointFactorPtr
+  gpgm.factors.clear(); // watch for aliasing issues with jointFactorPtr
   
   // extract mean from joint
   prlite::ColVector<double> jointMean = jointFactorSGPtr->getMean(); //marginalize for points to 6d, test cov with 3
@@ -305,10 +324,10 @@ void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, ve
 
   // create factors
   RVIds theVarsSubset = {};
-  for(unsigned i = 0; i < numRecords; i++)
+  for(unsigned i = 0; i < gpgm.numRecords; i++)
   {
     // get variable subset of record
-    theVarsSubset = getVariableSubset(i, inputSource, inputTarget);
+    theVarsSubset = getVariableSubset(i, gpgm.inputSource, gpgm.inputTarget);
 
     // get mean from joint mean and variable subset
     for(unsigned j = 0; j < 6; j++)
@@ -319,7 +338,7 @@ void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, ve
     // construct gaussians and append to factor list
     rcptr<SqrtMVG> pdfSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
     rcptr<Factor> pdfPtr = pdfSGPtr;
-    factors.push_back(pdfPtr);
+    gpgm.factors.push_back(pdfPtr);
   }
 
   
