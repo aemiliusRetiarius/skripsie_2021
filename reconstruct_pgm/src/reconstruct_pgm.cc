@@ -59,6 +59,7 @@ unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarg
 RVIds getVariableSubset(unsigned factorNum, const gaussian_pgm &gpgm);
 vector<double> getStartingPos(unsigned pointNum);
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2);
+rcptr<Factor> getObsFactor(unsigned factorNum, const gaussian_pgm &gpgm);
 double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors);
 
 
@@ -76,6 +77,7 @@ int main(int, char *argv[]) {
   cout << "Opened data file" << endl;
   readObsFile(obsString, pgm1);
   cout << "Opened observations file" <<  endl;
+
   // assume that there are no gaps in point numbering, possible improvement to handle it
   // find max value in source and target to find number of points
   pgm1.numPoints = getNumPoints(pgm1.inputSource, pgm1.inputTarget);
@@ -312,42 +314,36 @@ void extractNewFactors(gaussian_pgm &gpgm)
   jointFactorPtr = jointFactorPtr->observeAndReduce(gpgm.theVarsObs, gpgm.obsPos)->normalize(); //obsv individual
   rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
   
-  gpgm.factors.clear(); // watch for aliasing issues with jointFactorPtr
-  
-  // extract mean from joint
-  prlite::ColVector<double> jointMean = jointFactorSGPtr->getMean(); //marginalize for points to 6d, test cov with 3
-  cout << jointMean << endl;
-  // define new gaussian parameters
-  prlite::ColVector<double> theMn(6);
-  prlite::RowMatrix<double> theCv(6,6);
-  theCv.assignToAll(0.0);
-
-  for(unsigned i = 0; i < 6; i++)
-  {
-    theCv(i,i) = 1.0;
-  }
-
-  // create factors
+  //gpgm.factors.clear(); // watch for aliasing issues with jointFactorPtr
+  // step through factors to extract new gaussians by marginalizing joint gaussians
+  unsigned index = 0;
   RVIds theVarsSubset = {};
-  for(unsigned i = 0; i < gpgm.numRecords; i++)
+  rcptr<Factor> obsFactor, unobsFactor;
+  for(rcptr<Factor> factor : gpgm.factors)
   {
-    // get variable subset of record
-    theVarsSubset = getVariableSubset(i, gpgm);
-
-    // get mean from joint mean and variable subset
-    for(unsigned j = 0; j < 6; j++)
+    theVarsSubset = getVariableSubset(index, gpgm);
+    if(find(gpgm.theVarsObs.begin(), gpgm.theVarsObs.end(), theVarsSubset[0]) != gpgm.theVarsObs.end())
     {
-      theMn[j] = jointMean[theVarsSubset[j]];
+      // get known gaussian
+      // pass index
+      // get unobserved half of factor
+      theVarsSubset = {theVarsSubset[3], theVarsSubset[4], theVarsSubset[5]};
+      unobsFactor = jointFactorPtr->marginalize(theVarsSubset)->normalize();
+      factor = obsFactor->absorb(unobsFactor)->normalize();
+
     }
+    else if(find(gpgm.theVarsObs.begin(), gpgm.theVarsObs.end(), theVarsSubset[3]) != gpgm.theVarsObs.end())
+    {
 
-    // construct gaussians and append to factor list
-    rcptr<SqrtMVG> pdfSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
-    rcptr<Factor> pdfPtr = pdfSGPtr;
-    gpgm.factors.push_back(pdfPtr);
+    }
+    else
+    {
+      //cout << "old factor: " << *factor << endl;
+      factor = jointFactorPtr->marginalize(theVarsSubset)->normalize();
+      //cout << "new factor: " << *factor << endl;
+    }
+    index++;
   }
-
-  
-
 }
 
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget)
@@ -388,6 +384,38 @@ vector<double> getStartingPos(unsigned pointNum)
   pos.push_back((double) 0); //init grid om x-y plane
 
   return pos;
+}
+
+rcptr<Factor> getObsFactor(unsigned factorNum, const gaussian_pgm &gpgm)
+{
+  // find observed half of full factor and return it
+  unsigned obsNum, obsIndex = 0;
+  for(unsigned obsPoint : gpgm.obsPoints)
+  {
+    if((obsPoint == gpgm.inputSource[factorNum])||(obsPoint == gpgm.inputTarget[factorNum]))
+    {
+      //if current observed point num is in requested factor, break
+      break;
+    }
+    obsIndex++;
+  }
+
+  // define gaussian parameters 
+  prlite::ColVector<double> theMn(3);
+  prlite::RowMatrix<double> theCv(3,3);
+  RVIds theVarsSubset = {};
+
+  theCv.assignToAll(0.0);
+  for(unsigned i = 0; i < 3; i++)
+  {
+    theCv(i,i) = 0.1;
+    theMn[i] = (double)(gpgm.obsPos[obsIndex*3 + i]);
+    theVarsSubset.push_back((gpgm.obsPoints[obsIndex]-1)*3 + i);
+  }
+
+  rcptr<SqrtMVG> obsSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
+  rcptr<Factor> obsPtr = obsSGPtr; 
+  return obsPtr->normalize();
 }
 
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2)
