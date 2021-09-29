@@ -313,7 +313,7 @@ RVIds getVariableSubset(unsigned factorNum, const vector<unsigned> &inputSource,
 
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2)
 {
-  return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) + (z1-z2)*(z1-z2);
+  return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) + (z1-z2)*(z1-z2));
 }
 
 double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors) //check if mahanalobis only check means, use Kuback liebler
