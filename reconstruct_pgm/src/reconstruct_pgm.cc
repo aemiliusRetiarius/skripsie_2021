@@ -54,12 +54,14 @@ void initialiseVars(gaussian_pgm &gpgm);
 void initialiseFactors(gaussian_pgm &gpgm);
 void reconstructSigmaFactors(gaussian_pgm &gpgm);
 void extractNewFactors(gaussian_pgm &gpgm);
+void writeResultFile(string fileString, const gaussian_pgm &gpgm);
 
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
 RVIds getVariableSubset(unsigned factorNum, const gaussian_pgm &gpgm);
 vector<double> getStartingPos(unsigned pointNum);
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2);
 rcptr<Factor> getObsFactor(unsigned factorNum, const gaussian_pgm &gpgm);
+rcptr<Factor> getPointFactor(unsigned pointNum, const gaussian_pgm &gpgm);
 double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors);
 
 
@@ -67,7 +69,8 @@ int main(int, char *argv[]) {
 
   string dataString = "../../cube_gen/Data/dists.csv";
   string obsString = "../../cube_gen/Data/obs.csv";
-  double tolerance = 1;
+  string resultString = "../result.csv";
+  double tolerance = 0.1;
 
   gaussian_pgm pgm1;
   
@@ -77,11 +80,11 @@ int main(int, char *argv[]) {
   cout << "Opened data file" << endl;
   readObsFile(obsString, pgm1);
   cout << "Opened observations file" <<  endl;
-
+  
   // assume that there are no gaps in point numbering, possible improvement to handle it
   // find max value in source and target to find number of points
   pgm1.numPoints = getNumPoints(pgm1.inputSource, pgm1.inputTarget);
-  
+
   // find number of records -> number of factors
   pgm1.numRecords = pgm1.inputSource.size();
 
@@ -94,6 +97,7 @@ int main(int, char *argv[]) {
   // initialise factors with input data
   initialiseFactors(pgm1);
 
+  rcptr<SqrtMVG> testSGPtr; 
   do {
   // reconstruct new factors with additional dimension for distance
   reconstructSigmaFactors(pgm1);
@@ -101,11 +105,15 @@ int main(int, char *argv[]) {
   // observe and reduce full joint, extract new factors using mean
   extractNewFactors(pgm1);
 
+  testSGPtr = dynamic_pointer_cast<SqrtMVG>(getPointFactor(2, pgm1));
+  cout << "point 2 mean: " << testSGPtr->getMean() << "cov: " << testSGPtr->getCov() << endl;
+  testSGPtr = dynamic_pointer_cast<SqrtMVG>(getPointFactor(58, pgm1));
+  cout << "point 58 mean: " << testSGPtr->getMean() << "cov: " << testSGPtr->getCov() << endl;
   cout << "total diff dist: " << getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) << endl;
 
   } while(getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) > tolerance);
   
-
+  writeResultFile(resultString, pgm1);
 
 } // main
 
@@ -361,6 +369,28 @@ void extractNewFactors(gaussian_pgm &gpgm)
   //cout << *gpgm.factors[60] << endl;
 }
 
+void writeResultFile(string fileString, const gaussian_pgm &gpgm)
+{
+
+  fstream fout;
+  // opens an existing csv file or creates a new file.
+  fout.open(fileString, ios::out | ios::trunc);
+  fout << ",x,y,z" <<"\n";
+  
+  rcptr<SqrtMVG> pointFactorSGPtr;
+  string pointRecord = "";
+  prlite::ColVector<double> theMn(3);
+  for(unsigned i = 0; i < gpgm.numPoints; i++)
+  {
+    pointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(getPointFactor(i+1, gpgm));
+    theMn = pointFactorSGPtr->getMean();
+    pointRecord = to_string(i)+","+to_string(theMn[0])+","+to_string(theMn[1])+","+to_string(theMn[2]);
+    fout << pointRecord << "\n";
+  }
+  
+  fout.close();
+}
+
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget)
 {
   vector<unsigned> sortedSource, sortedTarget;
@@ -431,6 +461,21 @@ rcptr<Factor> getObsFactor(unsigned factorNum, const gaussian_pgm &gpgm)
   rcptr<SqrtMVG> obsSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
   rcptr<Factor> obsPtr = obsSGPtr; 
   return obsPtr->normalize();
+}
+
+rcptr<Factor> getPointFactor(unsigned pointNum, const gaussian_pgm &gpgm)
+{
+  // get x,y and z rvs of req point
+  RVIds theVarsSubset = {};
+  theVarsSubset.push_back(3*(pointNum-1));
+  theVarsSubset.push_back(3*(pointNum-1) +1);
+  theVarsSubset.push_back(3*(pointNum-1) +2);
+
+  // observe and reduce joint of reconsructed gaussians
+  rcptr<Factor> jointFactorPtr = absorb(gpgm.factors);
+  jointFactorPtr = jointFactorPtr->marginalize(theVarsSubset)->normalize();
+
+  return jointFactorPtr;
 }
 
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2)
