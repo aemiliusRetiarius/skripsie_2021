@@ -215,11 +215,13 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
 
     // define dist rv
     RVIds theVarsDist = {3*numPoints + index};
+    RVVals theDist = {inputDist[index]};
     
     // reconstruct new gaussian
     rcptr<SqrtMVG> pdfSigmaSGPtr(SqrtMVG::constructFromSigmaPoints(theVarsSubset, sigmaPoints, theVarsDist, sigmaPointsDists, sigmaPointsNoise));
-    pdfSigmaSGPtr = pdfSigmaSGPtr->observeAndReduce(theVarsDist, inputDist[index]);
     rcptr<Factor> pdfSigmaPtr = pdfSigmaSGPtr;
+    pdfSigmaPtr = pdfSigmaPtr->observeAndReduce(theVarsDist, theDist);
+    
 
     // redefine factor and push into old factors
     old_factors.push_back(factor);
@@ -237,6 +239,9 @@ void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, ve
   unsigned numRecords = factors.size();
   rcptr<Factor> jointFactorPtr = absorb(factors);
   //obsv known points
+
+  //jointFactorPtr = jointFactorPtr->observeAndReduce(theVarsDists, inputDist); //obsv individual
+  rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
 
   factors.clear(); // watch for aliasing issues with jointFactorPtr
   
