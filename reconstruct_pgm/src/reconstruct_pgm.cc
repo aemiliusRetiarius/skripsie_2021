@@ -71,8 +71,6 @@ int main(int, char *argv[]) {
   // initialise factors with input data
   initialiseFactors(factors, inputSource, inputTarget, numRecords);
 
-  cout << *(factors[3]) << endl;
-
   do {
   // reconstruct new factors with additional dimension for distance
   reconstructSigmaFactors(factors, old_factors, numPoints, inputDist);
@@ -191,6 +189,7 @@ void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &input
 // function will modify factors, old_factors
 void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<AnyType> inputDist)
 {
+  cout << "starting reconstruction..." << endl;
   // step through factors and add sigmapoints
   unsigned index = 0; 
   old_factors.clear();
@@ -220,8 +219,10 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
     // reconstruct new gaussian
     rcptr<SqrtMVG> pdfSigmaSGPtr(SqrtMVG::constructFromSigmaPoints(theVarsSubset, sigmaPoints, theVarsDist, sigmaPointsDists, sigmaPointsNoise));
     rcptr<Factor> pdfSigmaPtr = pdfSigmaSGPtr;
+    cout << "built new gaussian" << endl;
     pdfSigmaPtr = pdfSigmaPtr->observeAndReduce(theVarsDist, theDist);
     
+    cout << pdfSigmaPtr << endl;
 
     // redefine factor and push into old factors
     old_factors.push_back(factor);
@@ -312,7 +313,7 @@ RVIds getVariableSubset(unsigned factorNum, const vector<unsigned> &inputSource,
 
 double getDist(double x1, double y1, double z1, double x2, double y2, double z2)
 {
-  return sqrt(x1*x1 + y1*y1 + z1*z1 + x2*x2 + y2*y2 + z2*z2); //FIX
+  return sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2) + (z1-z2)*(z1-z2);
 }
 
 double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors) //check if mahanalobis only check means, use Kuback liebler
