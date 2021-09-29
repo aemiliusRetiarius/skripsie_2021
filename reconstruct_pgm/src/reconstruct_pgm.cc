@@ -21,11 +21,11 @@ using namespace emdw;
 #include "emdw.hpp"
 #include "sqrtmvg.hpp"
 
-void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<AnyType> inputDist, vector<bool> inputChangedFlag);
+void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<double> &inputDist, vector<bool> inputChangedFlag);
 void initialiseVars(RVIds &theVarsFull, RVIds &theVarsDists, unsigned numPoints, unsigned numRecords);
 void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, unsigned numRecords);
-void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<AnyType> inputDist);
-void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, vector<AnyType> inputDist, vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
+void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<double> &inputDist);
+void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, vector<double> inputDist, vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
 
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
 RVIds getVariableSubset(unsigned pointNum, const vector<unsigned> &inputSource, const vector<unsigned> &inputTarget);
@@ -39,12 +39,15 @@ int main(int, char *argv[]) {
 
   // file input storage vectors
   vector<unsigned> inputSource, inputTarget, sortedSource, sortedTarget; 
-  vector<AnyType> inputDist;
+  vector<double> inputDist;
   vector<bool> inputChangedFlag;
   
+  cout << inputDist << endl;
+  cout << inputSource << endl;
   // fill input storage vectors from file
   readFile(fileString, inputSource, inputTarget, inputDist, inputChangedFlag);
-
+  cout << inputSource << endl;
+  cout << inputDist << endl;
   // assume that there are no gaps in point numbering, possible improvement to handle it
   // find max value in source and target to find number of points
   unsigned numPoints = getNumPoints(inputSource, inputTarget);
@@ -80,7 +83,7 @@ int main(int, char *argv[]) {
 
   } while(getTotalMahanalobisDist(factors, old_factors) > tolerance);
   
-  cout << getTotalMahanalobisDist(factors, old_factors) << endl;
+  cout << "total diff dist: " << getTotalMahanalobisDist(factors, old_factors) << endl;
 
   //cout << inputDist << endl;
   //cout << theVarsDists << endl;
@@ -90,7 +93,7 @@ int main(int, char *argv[]) {
 } // main
 
 // function will modify storage vectors
-void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<AnyType> inputDist, vector<bool> inputChangedFlag)
+void readFile(string fileString, vector<unsigned> &inputSource, vector<unsigned> &inputTarget, vector<double> &inputDist, vector<bool> inputChangedFlag)
 {
   // file pointer
   fstream fin;
@@ -187,7 +190,7 @@ void initialiseFactors(vector< rcptr<Factor> > &factors, vector<unsigned> &input
 }
 
 // function will modify factors, old_factors
-void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<AnyType> inputDist)
+void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors, unsigned numPoints, vector<double> &inputDist)
 {
   cout << "starting reconstruction..." << endl;
   // step through factors and add sigmapoints
@@ -212,6 +215,7 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
       sigmaPointsDists(0, i) = getDist(sigmaPoints(0,i), sigmaPoints(1,i), sigmaPoints(2,i), sigmaPoints(3,i), sigmaPoints(4,i), sigmaPoints(5,i));
     }
 
+    
     // define dist rv
     RVIds theVarsDist = {3*numPoints + index};
     RVVals theDist = {inputDist[index]};
@@ -219,10 +223,7 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
     // reconstruct new gaussian
     rcptr<SqrtMVG> pdfSigmaSGPtr(SqrtMVG::constructFromSigmaPoints(theVarsSubset, sigmaPoints, theVarsDist, sigmaPointsDists, sigmaPointsNoise));
     rcptr<Factor> pdfSigmaPtr = pdfSigmaSGPtr;
-    cout << "built new gaussian" << endl;
-    pdfSigmaPtr = pdfSigmaPtr->observeAndReduce(theVarsDist, theDist);
-    
-    cout << pdfSigmaPtr << endl;
+    pdfSigmaPtr = pdfSigmaPtr->observeAndReduce(theVarsDist, theDist)->normalize();
 
     // redefine factor and push into old factors
     old_factors.push_back(factor);
@@ -234,7 +235,7 @@ void reconstructSigmaFactors(vector< rcptr<Factor> > &factors, vector< rcptr<Fac
 }
 
 // function will modify factors
-void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, vector<AnyType> inputDist, vector<unsigned> &inputSource, vector<unsigned> &inputTarget)
+void extractNewFactors(vector< rcptr<Factor> > &factors, RVIds &theVarsDists, vector<double> inputDist, vector<unsigned> &inputSource, vector<unsigned> &inputTarget)
 {
   // observe and reduce joint of reconsructed gaussians
   unsigned numRecords = factors.size();
