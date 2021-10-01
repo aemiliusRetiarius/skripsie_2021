@@ -45,7 +45,12 @@ struct gaussian_pgm {
   // define factors
   vector< rcptr<Factor> > factors;
   vector< rcptr<Factor> > old_factors;
+  rcptr<Factor> joint_factor;
 
+  unsigned dim = 6;
+  double lambda = 0;
+  vector<prlite::RowMatrix<double>> old_covs;
+  
 };
 
 void readDataFile(string fileString, gaussian_pgm &gpgm);
@@ -59,18 +64,22 @@ void writeResultFile(string fileString, const gaussian_pgm &gpgm);
 unsigned getNumPoints(vector<unsigned> &inputSource, vector<unsigned> &inputTarget);
 RVIds getVariableSubset(unsigned factorNum, const gaussian_pgm &gpgm);
 vector<double> getStartingPos(unsigned pointNum);
-double getDist(double x1, double y1, double z1, double x2, double y2, double z2);
+rcptr<Factor> dampenCovMat(const rcptr<Factor> newFactor, const rcptr<Factor> oldFactor, const gaussian_pgm &gpgm);
+prlite::RowMatrix<double> scalarProduct(prlite::RowMatrix<double> mat, double scalar, unsigned dim);
 rcptr<Factor> getObsFactor(unsigned factorNum, const gaussian_pgm &gpgm);
 rcptr<Factor> getPointFactor(unsigned pointNum, const gaussian_pgm &gpgm);
+double getDist(double x1, double y1, double z1, double x2, double y2, double z2);
 double getTotalMahanalobisDist(vector< rcptr<Factor> > &factors, vector< rcptr<Factor> > &old_factors);
 
 
 int main(int, char *argv[]) {
 
-  string dataString = "../../cube_gen/Data/dists.csv";
+  string dataString = "../../cube_gen/Data/dists_full.csv";
   string obsString = "../../cube_gen/Data/obs.csv";
   string resultString = "../result.csv";
+  double lambda = 0.95;
   double tolerance = 0.1;
+  unsigned iter = 0;
 
   gaussian_pgm pgm1;
   
@@ -80,6 +89,9 @@ int main(int, char *argv[]) {
   cout << "Opened data file" << endl;
   readObsFile(obsString, pgm1);
   cout << "Opened observations file" <<  endl;
+
+  // insert lambda value
+  pgm1.lambda = lambda;
   
   // assume that there are no gaps in point numbering, possible improvement to handle it
   // find max value in source and target to find number of points
@@ -94,24 +106,30 @@ int main(int, char *argv[]) {
   // fill rv vectors
   initialiseVars(pgm1);
 
+  cout << "RV's initialized" << endl;
+
   // initialise factors with input data
   initialiseFactors(pgm1);
+  cout << "Factors initialized" << endl;
 
   rcptr<SqrtMVG> testSGPtr; 
   do {
+
+  cout << "loop iter " << iter+1 << endl;
   // reconstruct new factors with additional dimension for distance
   reconstructSigmaFactors(pgm1);
   
   // observe and reduce full joint, extract new factors using mean
   extractNewFactors(pgm1);
 
-  testSGPtr = dynamic_pointer_cast<SqrtMVG>(getPointFactor(2, pgm1));
-  cout << "point 2 mean: " << testSGPtr->getMean() << "cov: " << testSGPtr->getCov() << endl;
+  testSGPtr = dynamic_pointer_cast<SqrtMVG>(getPointFactor(1, pgm1));
+  //cout << "point 1 mean: " << testSGPtr->getMean() << "cov: " << testSGPtr->getCov() << endl;
   testSGPtr = dynamic_pointer_cast<SqrtMVG>(getPointFactor(58, pgm1));
-  cout << "point 58 mean: " << testSGPtr->getMean() << "cov: " << testSGPtr->getCov() << endl;
-  cout << "total diff dist: " << getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) << endl;
-
-  } while(getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) > tolerance);
+  //cout << "point 58 mean: " << testSGPtr->getMean() << "cov: " << testSGPtr->getCov() << endl;
+  cout << "total mahanalobis dist: " << getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) << endl;
+  iter ++;
+  } while (iter <30);
+  //} while(getTotalMahanalobisDist(pgm1.factors, pgm1.old_factors) > tolerance);
   
   writeResultFile(resultString, pgm1);
 
@@ -236,13 +254,13 @@ void initialiseVars(gaussian_pgm &gpgm)
 void initialiseFactors(gaussian_pgm &gpgm)
 {
   // define initial gaussian parameters //mult gaussians*, larger cov, init grid
-  prlite::ColVector<double> theMn(6);
-  prlite::RowMatrix<double> theCv(6,6);
+  prlite::ColVector<double> theMn(gpgm.dim);
+  prlite::RowMatrix<double> theCv(gpgm.dim,gpgm.dim);
   theCv.assignToAll(0.0);
   
-  for(unsigned i = 0; i < 6; i++)
+  for(unsigned i = 0; i < gpgm.dim; i++)
   {
-    theCv(i,i) = 30.0;
+    theCv(i,i) = 200.0;
   }
 
   // create factors
@@ -257,10 +275,10 @@ void initialiseFactors(gaussian_pgm &gpgm)
     // get starting positions of variables and fill mean
     sourcePos = getStartingPos(gpgm.inputSource[i]-1);
     targetPos = getStartingPos(gpgm.inputTarget[i]-1); 
-    for(unsigned j = 0; j < 3; j++)
+    for(unsigned j = 0; j < gpgm.dim/2; j++)
     {
       theMn[j] = sourcePos[j];
-      theMn[3+j] = targetPos[j];
+      theMn[gpgm.dim/2+j] = targetPos[j];
     }
     // construct gaussians and append to factor list
     rcptr<SqrtMVG> pdfSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
@@ -290,12 +308,12 @@ void reconstructSigmaFactors(gaussian_pgm &gpgm)
     RVIds theVarsSubset = dynamic_pointer_cast<SqrtMVG>(factor)->getVars();
 
     // define dist row
-    prlite::ColMatrix<double> sigmaPointsDists(1, 13);
-    prlite::ColMatrix<double> sigmaPointsNoise(1, 13);
+    prlite::ColMatrix<double> sigmaPointsDists(1, gpgm.dim*2+1);
+    prlite::ColMatrix<double> sigmaPointsNoise(1, gpgm.dim*2+1);
     sigmaPointsNoise.assignToAll(0.0); // neccesary?
 
     // calc dist row
-    for(unsigned i = 0; i < 13; i++)
+    for(unsigned i = 0; i < gpgm.dim*2+1; i++)
     {
       sigmaPointsDists(0, i) = getDist(sigmaPoints(0,i), sigmaPoints(1,i), sigmaPoints(2,i), sigmaPoints(3,i), sigmaPoints(4,i), sigmaPoints(5,i));
     }
@@ -312,8 +330,8 @@ void reconstructSigmaFactors(gaussian_pgm &gpgm)
 
     // redefine factor and push into old factors
     gpgm.old_factors.push_back(factor);
-    new_factors.push_back(pdfSigmaPtr);
-
+    rcptr<Factor> dampenedPdfSigmaPtr = dampenCovMat(pdfSigmaPtr, factor, gpgm)->normalize();
+    new_factors.push_back(dampenedPdfSigmaPtr);
     // increment record index
     index++;
   }
@@ -323,50 +341,71 @@ void reconstructSigmaFactors(gaussian_pgm &gpgm)
 
 // function will modify factors
 void extractNewFactors(gaussian_pgm &gpgm)
-{
-  // observe and reduce joint of reconsructed gaussians
-  rcptr<Factor> jointFactorPtr = absorb(gpgm.factors);
-  jointFactorPtr = jointFactorPtr->observeAndReduce(gpgm.theVarsObs, gpgm.obsPos)->normalize(); //obsv individual
-  
-  rcptr<SqrtMVG> jointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(jointFactorPtr);
-  //gpgm.factors.clear(); // watch for aliasing issues with jointFactorPtr
+{ 
+  cout << "extracting factors..." << endl;
+  // observe and reduce joint of reconstructed gaussians
+  gpgm.joint_factor = absorb(gpgm.factors);
+  rcptr<Factor>red_joint_factor = gpgm.joint_factor->observeAndReduce(gpgm.theVarsObs, gpgm.obsPos)->normalize(); //obsv individual
   // step through factors to extract new gaussians by marginalizing joint gaussians
   unsigned index = 0;
   RVIds theVarsSubset = {};
   rcptr<Factor> obsFactor, unobsFactor;
+  vector< rcptr<Factor> > new_factors;
+
   for(rcptr<Factor> factor : gpgm.factors)
   {
     theVarsSubset = getVariableSubset(index, gpgm);
-    if(find(gpgm.theVarsObs.begin(), gpgm.theVarsObs.end(), theVarsSubset[0]) != gpgm.theVarsObs.end())
+    if(index%500 == 0){cout << "index: " << index << endl;}
+    
+    if((find(gpgm.theVarsObs.begin(), gpgm.theVarsObs.end(), theVarsSubset[0]) != gpgm.theVarsObs.end())&&(find(gpgm.theVarsObs.begin(), gpgm.theVarsObs.end(), theVarsSubset[3]) != gpgm.theVarsObs.end()))
     {
+      obsFactor = getObsFactor(index, gpgm)->normalize();  
+      new_factors.push_back(obsFactor);
+
+    }
+    else if(find(gpgm.theVarsObs.begin(), gpgm.theVarsObs.end(), theVarsSubset[0]) != gpgm.theVarsObs.end())
+    {
+      
       // get known gaussian
       obsFactor = getObsFactor(index, gpgm);
+
       // get unobserved half of factor
       theVarsSubset = {theVarsSubset[3], theVarsSubset[4], theVarsSubset[5]};
-      unobsFactor = jointFactorPtr->marginalize(theVarsSubset)->normalize();
+      
+      unobsFactor = red_joint_factor->marginalize(theVarsSubset)->normalize();
+
       // mult halves to get new factor
-      factor = obsFactor->absorb(unobsFactor)->normalize();
+      rcptr<Factor> dampenedPdfPtr = dampenCovMat(obsFactor->absorb(unobsFactor)->normalize(), factor, gpgm)->normalize();
+      
+      new_factors.push_back(dampenedPdfPtr);
 
     }
     else if(find(gpgm.theVarsObs.begin(), gpgm.theVarsObs.end(), theVarsSubset[3]) != gpgm.theVarsObs.end())
     {
+
       // get known gaussian
       obsFactor = getObsFactor(index, gpgm);
       // get unobserved half of factor
       theVarsSubset = {theVarsSubset[0], theVarsSubset[1], theVarsSubset[2]};
-      unobsFactor = jointFactorPtr->marginalize(theVarsSubset)->normalize();
+      unobsFactor = red_joint_factor->marginalize(theVarsSubset)->normalize();
       // mult halves to get new factor
-      factor = obsFactor->absorb(unobsFactor)->normalize();
+      rcptr<Factor> dampenedPdfPtr = dampenCovMat(obsFactor->absorb(unobsFactor)->normalize(), factor, gpgm)->normalize();
+      new_factors.push_back(dampenedPdfPtr);
     }
     else
     {
-      //cout << "old factor: " << *factor << endl;
-      factor = jointFactorPtr->marginalize(theVarsSubset)->normalize();
-      //cout << "new factor: " << *factor << endl;
+      //if(index == 50) {cout << "old factor[50]: " << (dynamic_pointer_cast<SqrtMVG>(factor))->getMean() << endl;}
+      //if(index == 50) {cout  << "pre margin:"<<(dynamic_pointer_cast<SqrtMVG>(factor))->getCov() << endl;}
+      rcptr<Factor> dampenedPdfPtr = dampenCovMat(red_joint_factor->marginalize(theVarsSubset)->normalize(), factor, gpgm)->normalize();
+      new_factors.push_back(dampenedPdfPtr);
+      //if(index == 50) {cout << "new factor[50]: " << (dynamic_pointer_cast<SqrtMVG>(factor))->getMean() << endl;}
+      //if(index == 50) {cout  << "post margin:"<<(dynamic_pointer_cast<SqrtMVG>(factor))->getCov() << endl;}
+
     }
     index++;
   }
-  //cout << *gpgm.factors[60] << endl;
+  
+  gpgm.factors = new_factors;
 }
 
 void writeResultFile(string fileString, const gaussian_pgm &gpgm)
@@ -384,10 +423,10 @@ void writeResultFile(string fileString, const gaussian_pgm &gpgm)
   {
     pointFactorSGPtr = dynamic_pointer_cast<SqrtMVG>(getPointFactor(i+1, gpgm));
     theMn = pointFactorSGPtr->getMean();
-    pointRecord = to_string(i)+","+to_string(theMn[0])+","+to_string(theMn[1])+","+to_string(theMn[2]);
-    fout << pointRecord << "\n";
+    pointRecord = pointRecord + to_string(i)+","+to_string(theMn[0])+","+to_string(theMn[1])+","+to_string(theMn[2])+"\n";
   }
   
+  fout << pointRecord;
   fout.close();
 }
 
@@ -420,6 +459,7 @@ RVIds getVariableSubset(unsigned factorNum, const gaussian_pgm &gpgm)
   return theVarsSubset;
 }
 
+
 vector<double> getStartingPos(unsigned pointNum)
 {
   // vector contains starting {x, y, z}
@@ -431,36 +471,82 @@ vector<double> getStartingPos(unsigned pointNum)
   return pos;
 }
 
+/**
+vector<double> getStartingPos(unsigned pointNum)
+{
+  // vector contains starting {x, y, z}
+  vector<double> pos = {};
+  pos.push_back((double)((pointNum % 20)%5)*20);
+  pos.push_back((double)((pointNum % 20)/4)*20);
+  pos.push_back((double) (pointNum / 20)*20); //init grid om x-y plane
+
+  return pos;
+}
+**/
+
+rcptr<Factor> dampenCovMat(const rcptr<Factor> newFactor, const rcptr<Factor> oldFactor, const gaussian_pgm &gpgm)
+{
+  rcptr<SqrtMVG> newFactorSG = dynamic_pointer_cast<SqrtMVG>(newFactor);
+  rcptr<SqrtMVG> oldFactorSG = dynamic_pointer_cast<SqrtMVG>(oldFactor);
+  prlite::RowMatrix<double> dampedCov = scalarProduct(oldFactorSG->getCov(), gpgm.lambda, gpgm.dim) + scalarProduct(newFactorSG->getCov(), (1-gpgm.lambda), gpgm.dim);
+  rcptr<SqrtMVG> pdfSGPtr ( new SqrtMVG(newFactorSG->getVars(), newFactorSG->getMean(), dampedCov));
+  rcptr<Factor> pdfPtr = pdfSGPtr;
+  return pdfPtr;
+}
+
+prlite::RowMatrix<double> scalarProduct(const prlite::RowMatrix<double> mat, double scalar, unsigned dim)
+{
+  
+  prlite::RowMatrix<double> resMat(dim, dim);
+
+  for(unsigned row = 0; row < dim; row++)
+  {
+    for(unsigned col = 0; col < dim; col++)
+    {
+      resMat(row,col) = scalar * mat(row,col);
+    }
+  }
+
+  return resMat;
+}
+
 rcptr<Factor> getObsFactor(unsigned factorNum, const gaussian_pgm &gpgm)
 {
   // find observed half of full factor and return it
-  unsigned obsIndex = 0;
+  vector<unsigned> obsIndices = {};
+  unsigned index = 0;
   for(unsigned obsPoint : gpgm.obsPoints)
   {
     if((obsPoint == gpgm.inputSource[factorNum])||(obsPoint == gpgm.inputTarget[factorNum]))
     {
-      //if current observed point num is in requested factor, break
-      break;
+      //if current observed point num is in requested factor, push into obsIndex
+      obsIndices.push_back(index);
     }
-    obsIndex++;
+    index++;
   }
 
-  // define gaussian parameters 
-  prlite::ColVector<double> theMn(3);
-  prlite::RowMatrix<double> theCv(3,3);
-  RVIds theVarsSubset = {};
-
-  theCv.assignToAll(0.0);
-  for(unsigned i = 0; i < 3; i++)
+  vector<rcptr<Factor>> obsPdfs;
+  for(unsigned obsIndex : obsIndices)
   {
-    theCv(i,i) = 0.1;
-    theMn[i] = (double)(gpgm.obsPos[obsIndex*3 + i]);
-    theVarsSubset.push_back((gpgm.obsPoints[obsIndex]-1)*3 + i);
-  }
+    // define gaussian parameters 
+    prlite::ColVector<double> theMn(3);
+    prlite::RowMatrix<double> theCv(3,3);
+    RVIds theVarsSubset = {};
 
-  rcptr<SqrtMVG> obsSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
-  rcptr<Factor> obsPtr = obsSGPtr; 
-  return obsPtr->normalize();
+    theCv.assignToAll(0.0);
+    for(unsigned i = 0; i < 3; i++)
+    {
+      theCv(i,i) = 0.1;
+      theMn[i] = (double)(gpgm.obsPos[obsIndex*3 + i]);
+      theVarsSubset.push_back((gpgm.obsPoints[obsIndex]-1)*3 + i);
+    }
+
+    rcptr<SqrtMVG> obsSGPtr ( new SqrtMVG(theVarsSubset, theMn, theCv));
+    rcptr<Factor> obsPtr = obsSGPtr;
+    obsPdfs.push_back(obsPtr);
+    
+  }
+  return absorb(obsPdfs);
 }
 
 rcptr<Factor> getPointFactor(unsigned pointNum, const gaussian_pgm &gpgm)
@@ -472,8 +558,8 @@ rcptr<Factor> getPointFactor(unsigned pointNum, const gaussian_pgm &gpgm)
   theVarsSubset.push_back(3*(pointNum-1) +2);
 
   // observe and reduce joint of reconsructed gaussians
-  rcptr<Factor> jointFactorPtr = absorb(gpgm.factors);
-  jointFactorPtr = jointFactorPtr->marginalize(theVarsSubset)->normalize();
+  rcptr<Factor> jointFactorPtr;
+  jointFactorPtr = gpgm.joint_factor->marginalize(theVarsSubset)->normalize();
 
   return jointFactorPtr;
 }
