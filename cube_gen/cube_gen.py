@@ -207,21 +207,25 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
 
     return dist_df
 
-def get_point_coords():
-    points_df = pd.DataFrame(columns=['point_id','x_pos', 'y_pos','z_pos'])
+def get_point_coords(noise_std_dev=0):
+    points_df = pd.DataFrame(columns=['point_id','x_pos', 'y_pos','z_pos','x_tol','y_tol','z_tol'])
     for i in range(98):
         
         
         point = encode_point(i+1)
-        x_pos = point[0,0]
-        y_pos = point[1,0]
-        z_pos = point[2,0]
-        point_df = pd.DataFrame([[i+1,x_pos,y_pos,z_pos]],columns=['point_id','x_pos', 'y_pos','z_pos'])
+        x_pos = np.random.normal(point[0,0], noise_std_dev)
+        y_pos = np.random.normal(point[1,0], noise_std_dev)
+        z_pos = np.random.normal(point[2,0], noise_std_dev)
+        point_df = pd.DataFrame([[i+1,x_pos,y_pos,z_pos,noise_std_dev,noise_std_dev,noise_std_dev]],columns=['point_id','x_pos', 'y_pos','z_pos','x_tol','y_tol','z_tol'])
         points_df = points_df.append(point_df, ignore_index=True)
 
     return points_df
 
 if(__name__ == '__main__'):
-    #df = gen_dist_df(98, 5)
-    #df.to_csv('dists.csv')
-    get_point_coords().to_csv('point_coords.csv')
+    #df = gen_dist_df(98, 5, verbosity=4, noise_percent=10)
+    #df.to_csv('dists_inter_5_noise_1%.csv')
+    #print(distance(1,37,0))
+    print(encode_point(5))
+    print(encode_point(21))
+    print(encode_point(30))
+    #get_point_coords().to_csv('point_coords.csv')
