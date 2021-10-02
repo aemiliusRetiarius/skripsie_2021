@@ -207,6 +207,21 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
 
     return dist_df
 
+def get_point_coords():
+    points_df = pd.DataFrame(columns=['point_id','x_pos', 'y_pos','z_pos'])
+    for i in range(98):
+        
+        
+        point = encode_point(i+1)
+        x_pos = point[0,0]
+        y_pos = point[1,0]
+        z_pos = point[2,0]
+        point_df = pd.DataFrame([[i+1,x_pos,y_pos,z_pos]],columns=['point_id','x_pos', 'y_pos','z_pos'])
+        points_df = points_df.append(point_df, ignore_index=True)
+
+    return points_df
+
 if(__name__ == '__main__'):
-    df = gen_dist_df(98, 5)
-    df.to_csv('dists.csv')
+    #df = gen_dist_df(98, 5)
+    #df.to_csv('dists.csv')
+    get_point_coords().to_csv('point_coords.csv')
