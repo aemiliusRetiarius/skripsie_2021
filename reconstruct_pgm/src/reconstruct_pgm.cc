@@ -38,7 +38,8 @@ struct gaussian_pgm
 
     map< unsigned, RVIds> posRVsMap; // map <point_num, RVIds>
     map< pair<unsigned,unsigned>, RVIds> clusterRVsMap; // map <pair<point_num1, point_num2>, RVIds>
-    map< RVIdType, double > obsvPosMap; // map <obsv_pos_rv, obs_value>
+    map< RVIdType, double > obsPosMap; // map <obs_pos_rv, obs_value>
+    map< pair<unsigned,unsigned>, RVIdType> distRVsMap; // map <pair<point_num1, point_num2>, RVId>
 
     vector< rcptr<Factor> > clusters; // combined factor that corresponds to single dist record
     rcptr<Factor> joint_factor; // full joint factor
@@ -64,9 +65,9 @@ int main(int, char *argv[])
     readPosFile(posDdataString, pgm1, ' ', false, false);
     readDistFile(distDataString, pgm1, ' ', false, false);
     initRVs(pgm1);
-    for(auto point : pgm1.posRVsMap)
+    for(auto point : pgm1.clusterRVsMap)
     {
-        cout << point.second << endl;
+        //cout << point.second << endl;
     }
 
 }
@@ -169,10 +170,36 @@ void initRVs(gaussian_pgm &gpgm)
         {
             // add incremented RV to RV vector of point
             (gpgm.posRVsMap[point.first]).push_back(RVIndex);
+
+            // check tol to see if observed, if obs add to observed position map
+            if(gpgm.posTolMap[point.first][i] < 1E-20)
+            {
+                gpgm.obsPosMap[RVIndex] = point.second[i];
+            }
             RVIndex++;
         }
     }
-    
+
+    for(auto record : gpgm.distMap)
+    {   
+        unsigned p1 = record.first.first;
+        unsigned p2 = record.first.second;
+        // Add dist RV to map
+        gpgm.distRVsMap[{p1,p2}] = RVIndex;
+        // Add pos RVs of point 1 to cluster RVs map
+        for(unsigned i = 0; i < gpgm.dimMap[p1]; i++)
+        {
+            gpgm.clusterRVsMap[{p1,p2}].push_back(gpgm.posRVsMap[p1][i]);
+        }
+        // Add pos RVs of point 2 to cluster RVs map
+        for(unsigned i = 0; i < gpgm.dimMap[p1]; i++)
+        {
+            gpgm.clusterRVsMap[{p1,p2}].push_back(gpgm.posRVsMap[p2][i]);
+        }
+
+        RVIndex++;
+    }
+
     return;
 
 }
