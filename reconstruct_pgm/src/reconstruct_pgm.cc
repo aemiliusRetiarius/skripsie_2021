@@ -51,7 +51,7 @@ int main(int, char *argv[])
 {
     //string dataString = "../../cube_gen/Data/dists.csv";
     string posDdataString = "../Data/initpos10.csv";
-    string obsString = "../../cube_gen/Data/obs.csv";
+    string distDataString = "../Data/dists1.csv";
     //string resultString = "../result.csv";
     double lambda = 0.0;
     double tolerance = 0.1;
@@ -59,10 +59,11 @@ int main(int, char *argv[])
 
     gaussian_pgm pgm1;
 
-    readPosFile(posDdataString, pgm1,' ',false,false);
-    for(auto point : pgm1.posMap)
+    readPosFile(posDdataString, pgm1, ' ', false, false);
+    readDistFile(distDataString, pgm1, ' ', false, false);
+    for(auto point : pgm1.distMap)
     {
-        cout << point.second << endl;
+        cout << point.first << endl;
     }
 
 }
@@ -110,7 +111,7 @@ void readPosFile(const string fileString, gaussian_pgm &gpgm, const char delimit
 
     }
 
-    fin.close()
+    fin.close();
     return;
 }
 
