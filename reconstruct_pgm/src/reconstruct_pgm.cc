@@ -36,9 +36,9 @@ struct gaussian_pgm
     map< pair<unsigned, unsigned>, double> distMap; // map <pair<point_num1, point_num2>, dist>
     map< pair<unsigned, unsigned>, double> distTolMap; // map <pair<point_num1, point_num2>, dist_tol>
 
-    map< unsigned, RVIds> pointPosRVs; // map <point_num, RVIds>
-    map< pair<unsigned,unsigned>, RVIds> clusterRVs; // map <pair<point_num1, point_num2>, RVIds>
-    map< RVIdType, double > obsvPos; // map <obsv_pos_rv, obs_value>
+    map< unsigned, RVIds> posRVsMap; // map <point_num, RVIds>
+    map< pair<unsigned,unsigned>, RVIds> clusterRVsMap; // map <pair<point_num1, point_num2>, RVIds>
+    map< RVIdType, double > obsvPosMap; // map <obsv_pos_rv, obs_value>
 
     vector< rcptr<Factor> > clusters; // combined factor that corresponds to single dist record
     rcptr<Factor> joint_factor; // full joint factor
@@ -46,6 +46,8 @@ struct gaussian_pgm
 
 void readPosFile(const string fileString, gaussian_pgm &gpgm, const char delimiter=',', const bool discardLineFlag=true, const bool discardIndexFlag=true);
 void readDistFile(const string fileString, gaussian_pgm &gpgm, const char delimiter=',', const bool discardLineFlag=true, const bool discardIndexFlag=true);
+void initRVs(gaussian_pgm &gpgm);
+void initClusters(gaussian_pgm &gpgm);
 
 int main(int, char *argv[])
 {
@@ -61,9 +63,10 @@ int main(int, char *argv[])
 
     readPosFile(posDdataString, pgm1, ' ', false, false);
     readDistFile(distDataString, pgm1, ' ', false, false);
-    for(auto point : pgm1.distMap)
+    initRVs(pgm1);
+    for(auto point : pgm1.posRVsMap)
     {
-        cout << point.first << endl;
+        cout << point.second << endl;
     }
 
 }
@@ -156,3 +159,25 @@ void readDistFile(const string fileString, gaussian_pgm &gpgm, const char delimi
     return;
 }
 
+void initRVs(gaussian_pgm &gpgm)
+{
+    // step through position map and add RV for every axis to mirrored map
+    unsigned RVIndex = 0;
+    for(auto point : gpgm.posMap)
+    {
+        for(unsigned i = 0; i < gpgm.dimMap[point.first]; i++)
+        {
+            // add incremented RV to RV vector of point
+            (gpgm.posRVsMap[point.first]).push_back(RVIndex);
+            RVIndex++;
+        }
+    }
+    
+    return;
+
+}
+
+void initClusters(gaussian_pgm &gpgm)
+{
+
+}
