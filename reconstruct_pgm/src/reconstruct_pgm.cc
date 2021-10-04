@@ -41,7 +41,7 @@ struct gaussian_pgm
     map< RVIdType, double > obsPosMap; // map <obs_pos_rv, obs_value>
     map< pair<unsigned,unsigned>, RVIdType> distRVsMap; // map <pair<point_num1, point_num2>, RVId>
 
-    vector< rcptr<Factor> > clusters; // combined factor that corresponds to single dist record
+    map< pair<unsigned,unsigned>, rcptr<Factor> > clusters; // combined factor that corresponds to single dist record
     rcptr<Factor> joint_factor; // full joint factor
 };
 
@@ -65,9 +65,12 @@ int main(int, char *argv[])
     readPosFile(posDdataString, pgm1, ' ', false, false);
     readDistFile(distDataString, pgm1, ' ', false, false);
     initRVs(pgm1);
-    for(auto point : pgm1.clusterRVsMap)
-    {
-        //cout << point.second << endl;
+    initClusters(pgm1);
+    for(auto cluster : pgm1.clusters)
+    {   
+        //rcptr<SqrtMVG> mvgFactor = dynamic_pointer_cast<SqrtMVG>(cluster.second);
+        //cout << mvgFactor->getMean() << endl;
+        //cout << cluster.first << endl;
     }
 
 }
@@ -206,5 +209,65 @@ void initRVs(gaussian_pgm &gpgm)
 
 void initClusters(gaussian_pgm &gpgm)
 {
+    // step through points and create vector of factors for each point
+    map< unsigned, rcptr<Factor> > priorFactors;
 
+    for(auto point : gpgm.posMap)
+    {
+        // create 1D factor if unobserved
+        vector< rcptr<Factor> > scalarFactors;
+        prlite::ColVector<double> mn1D(1);
+        prlite::RowMatrix<double> cv1D(1,1);
+        unsigned point_num = point.first;
+
+        for(unsigned i = 0; i < gpgm.dimMap[point_num]; i++)
+        {   
+            // check if observed
+            if(gpgm.posTolMap[point_num][i] > 1E-20)
+            {
+                mn1D[0] = point.second[i];
+                cv1D(0,0) = gpgm.posTolMap[point_num][i];
+                scalarFactors.push_back( uniqptr<SqrtMVG> ( new SqrtMVG({gpgm.posRVsMap[point_num][i]}, mn1D, cv1D) ) );        
+            }
+        }
+        // check if scalarFactors empty and collapse if not
+        if(scalarFactors.size() > 0)
+        {
+            priorFactors[point_num] = absorb(scalarFactors)->normalize();
+        }
+        else
+        {   
+            // factor is observed, assign nullptr
+            priorFactors[point_num] = nullptr;
+        }
+    }
+
+    // step through cluster prototypes and build clusters
+    for(auto cluster : gpgm.clusterRVsMap)
+    {
+        unsigned p1 = cluster.first.first;
+        unsigned p2 = cluster.first.second;
+
+        if(priorFactors[p1] == nullptr)
+        {
+            if (priorFactors[p2] == nullptr) 
+            {
+            cerr << __FILE__ << __LINE__ << " unexpected distance between two fully observed points "
+                 << p1 << " and " << p2 << endl;
+            cerr << "Rather just remove this distance, it does not contribute anything!\n";
+            exit(-1);
+            } // if
+            gpgm.clusters[{p1,p2}] = priorFactors[p2];
+        }
+        else if(priorFactors[p2] == nullptr)
+        {
+            gpgm.clusters[{p1,p2}] = priorFactors[p1];
+        }
+        else
+        {
+            gpgm.clusters[{p1,p2}] = priorFactors[p1]->absorb(priorFactors[p2])->normalize();
+        }
+    }
+
+    return;
 }
