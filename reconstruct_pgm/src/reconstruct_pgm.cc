@@ -38,7 +38,9 @@ struct gaussian_pgm
 
     map< unsigned, RVIds> posRVsMap; // map <point_num, RVIds>
     map< pair<unsigned,unsigned>, RVIds> clusterRVsMap; // map <pair<point_num1, point_num2>, RVIds>
-    map< RVIdType, double > obsPosMap; // map <obs_pos_rv, obs_value>
+    map< RVIdType, double > obsMap; // map <obs_pos_rv, obs_value>
+    RVIds obsVars; // repackaged observed vars
+    RVVals obsVals; // repackaged observed vals
     map< pair<unsigned,unsigned>, RVIdType> distRVsMap; // map <pair<point_num1, point_num2>, RVId>
 
     map< pair<unsigned,unsigned>, rcptr<Factor> > clusters; // combined factor that corresponds to single dist record
@@ -47,8 +49,16 @@ struct gaussian_pgm
 
 void readPosFile(const string fileString, gaussian_pgm &gpgm, const char delimiter=',', const bool discardLineFlag=true, const bool discardIndexFlag=true);
 void readDistFile(const string fileString, gaussian_pgm &gpgm, const char delimiter=',', const bool discardLineFlag=true, const bool discardIndexFlag=true);
+
 void initRVs(gaussian_pgm &gpgm);
+void repackageObs(gaussian_pgm &gpgm);
 void initClusters(gaussian_pgm &gpgm);
+void reconstructFromSigmaPoints(gaussian_pgm &gpgm);
+
+double getDist(const pair<vector<double>, vector<double>> pointsPair);
+
+template<typename TK, typename TV> std::vector<TK> extract_keys(std::map<TK, TV> const& input_map);
+template<typename TK, typename TV> std::vector<TV> extract_values(std::map<TK, TV> const& input_map);
 
 int main(int, char *argv[])
 {
@@ -66,6 +76,8 @@ int main(int, char *argv[])
     readDistFile(distDataString, pgm1, ' ', false, false);
     initRVs(pgm1);
     initClusters(pgm1);
+    reconstructFromSigmaPoints(pgm1);
+    cout << *pgm1.joint_factor << endl;
     for(auto cluster : pgm1.clusters)
     {   
         //rcptr<SqrtMVG> mvgFactor = dynamic_pointer_cast<SqrtMVG>(cluster.second);
@@ -177,7 +189,7 @@ void initRVs(gaussian_pgm &gpgm)
             // check tol to see if observed, if obs add to observed position map
             if(gpgm.posTolMap[point.first][i] < 1E-20)
             {
-                gpgm.obsPosMap[RVIndex] = point.second[i];
+                gpgm.obsMap[RVIndex] = point.second[i];
             }
             RVIndex++;
         }
@@ -189,6 +201,8 @@ void initRVs(gaussian_pgm &gpgm)
         unsigned p2 = record.first.second;
         // Add dist RV to map
         gpgm.distRVsMap[{p1,p2}] = RVIndex;
+        // Add distance observation to map
+        gpgm.obsMap[RVIndex] = record.second;
         // Add pos RVs of point 1 to cluster RVs map
         for(unsigned i = 0; i < gpgm.dimMap[p1]; i++)
         {
@@ -203,8 +217,22 @@ void initRVs(gaussian_pgm &gpgm)
         RVIndex++;
     }
 
+    repackageObs(gpgm);
     return;
 
+}
+
+void repackageObs(gaussian_pgm &gpgm)
+{
+    gpgm.obsVars.clear();
+    gpgm.obsVals.clear();
+    for (auto el : gpgm.obsMap) 
+    {
+        gpgm.obsVars.push_back(el.first);
+        gpgm.obsVals.push_back(el.second);
+    } // for
+
+    return;
 }
 
 void initClusters(gaussian_pgm &gpgm)
@@ -270,4 +298,128 @@ void initClusters(gaussian_pgm &gpgm)
     }
 
     return;
+}
+
+void reconstructFromSigmaPoints(gaussian_pgm &gpgm)
+{
+    prlite::ColMatrix<double> sigmaPoints;
+    prlite::ColMatrix<double> sigmaDists;
+    prlite::ColMatrix<double> distNoise(1,1);
+    vector<rcptr<Factor>> factors; // TODO:add result factors to jointfactor in struct one by one in loop below?
+
+    for(auto cluster : gpgm.clusters)
+    {
+        unsigned p1 = cluster.first.first;
+        unsigned p2 = cluster.first.second;
+
+        RVIds clusterRVs = gpgm.clusterRVsMap[{p1,p2}];
+        
+        rcptr<SqrtMVG>mvgFactor = std::dynamic_pointer_cast<SqrtMVG>(cluster.second);  // get the factor
+        sigmaPoints = mvgFactor->getSigmaPoints();  
+        sigmaDists.resize(1, sigmaPoints.cols());
+
+        // step through cols and add dist to sigmadists
+        for(unsigned col = 0; col < (unsigned)sigmaPoints.cols(); col++)
+        {
+            pair<vector<double>, vector<double>>  sigmaPosValuesPair;
+
+            unsigned RVIndex = 0;
+            unsigned unobsCount = 0;
+            // step through first point dimensions
+            for(unsigned i = 0; i < gpgm.dimMap[p1]; i++)
+            {
+                auto itr = gpgm.obsMap.find(clusterRVs[RVIndex]);
+                if(itr != gpgm.obsMap.end())
+                {
+                    // RV observed, use observed value
+                    sigmaPosValuesPair.first.push_back(double(itr->second)); // for observed RVs, use its value directly
+                }
+                else
+                {
+                    // RV unobserved, use sigmapoint value
+                    sigmaPosValuesPair.first.push_back(sigmaPoints(unobsCount,col));
+                    unobsCount++;
+                }
+                RVIndex++;
+            }
+            // step through second point dimensions
+            for(unsigned i = 0; i < gpgm.dimMap[p2]; i++)
+            {
+                auto itr = gpgm.obsMap.find(clusterRVs[RVIndex]);
+                if(itr != gpgm.obsMap.end())
+                {
+                    // RV observed, use observed value
+                    sigmaPosValuesPair.second.push_back(double(itr->second)); // for observed RVs, use its value directly
+                }
+                else
+                {
+                    // RV unobserved, use sigmapoint value
+                    sigmaPosValuesPair.second.push_back(sigmaPoints(unobsCount,col));
+                    unobsCount++;
+                }
+                RVIndex++;
+            }
+            // get distance from sigma and oberved points
+            sigmaDists(0, col) = getDist(sigmaPosValuesPair);
+        } // end sigmapoints for
+
+        distNoise(0,0) = gpgm.distTolMap[{p1,p2}];
+        mvgFactor = uniqptr<SqrtMVG>(
+                    SqrtMVG::constructFromSigmaPoints(
+                        cluster.second->getVars(), sigmaPoints,
+                        {gpgm.distRVsMap[{p1,p2}]},
+                        sigmaDists, distNoise) );
+        // and observe the distance value
+        factors.push_back( mvgFactor->Factor::observeAndReduce(gpgm.obsVars, gpgm.obsVals)->normalize() );
+
+    }
+
+    gpgm.joint_factor = absorb(factors)->normalize();
+    return;
+}
+
+// get distance between two points of arbitrary dimension
+double getDist(const pair<vector<double>, vector<double>> pointsPair)
+{
+    
+    // get max dimension
+    unsigned maxDim = max(pointsPair.first.size(), pointsPair.second.size());
+    
+    // step through max dimensions
+    double square_sum = 0;
+    double val1, val2, dif;
+    for(unsigned i = 0; i < maxDim; i++)
+    {
+        val1 = 0;
+        val2 = 0;
+        // if current dim defined for point, use value (will be 0 otherwise)
+        if(i < pointsPair.first.size()) val1 = pointsPair.first[i];
+        if(i < pointsPair.second.size()) val2 = pointsPair.second[i];
+        // calc difference
+        dif = val1 - val2;
+        // add square to running sum
+        square_sum = square_sum + dif*dif;
+    }
+
+    return sqrt(square_sum);
+}
+
+// TODO: check if used
+// source: https://www.lonecpluspluscoder.com/2015/08/13/an-elegant-way-to-extract-keys-from-a-c-map/
+template<typename TK, typename TV> std::vector<TK> extract_keys(std::map<TK, TV> const& input_map) 
+{
+  std::vector<TK> retval;
+  for (auto const& element : input_map) {
+    retval.push_back(element.first);
+  }
+  return retval;
+}
+
+template<typename TK, typename TV> std::vector<TV> extract_values(std::map<TK, TV> const& input_map) 
+{
+  std::vector<TV> retval;
+  for (auto const& element : input_map) {
+    retval.push_back(element.second);
+  }
+  return retval;
 }
