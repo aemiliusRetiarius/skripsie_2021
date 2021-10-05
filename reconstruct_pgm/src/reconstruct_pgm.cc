@@ -54,6 +54,8 @@ void initRVs(gaussian_pgm &gpgm);
 void repackageObs(gaussian_pgm &gpgm);
 void initClusters(gaussian_pgm &gpgm);
 void reconstructFromSigmaPoints(gaussian_pgm &gpgm);
+void updateClusters(gaussian_pgm &gpgm);
+void updatePositions(gaussian_pgm &gpgm);
 
 double getDist(const pair<vector<double>, vector<double>> pointsPair);
 
@@ -66,23 +68,31 @@ int main(int, char *argv[])
     string posDdataString = "../Data/initpos10.csv";
     string distDataString = "../Data/dists1.csv";
     //string resultString = "../result.csv";
-    double lambda = 0.0;
+    double lambda = 0.3;
     double tolerance = 0.1;
     unsigned iter = 0;
 
     gaussian_pgm pgm1;
 
+    pgm1.lambda = lambda;
     readPosFile(posDdataString, pgm1, ' ', false, false);
     readDistFile(distDataString, pgm1, ' ', false, false);
     initRVs(pgm1);
+    
+    do{
+    cout << iter << endl;
     initClusters(pgm1);
     reconstructFromSigmaPoints(pgm1);
-    cout << *pgm1.joint_factor << endl;
-    for(auto cluster : pgm1.clusters)
+    updateClusters(pgm1);
+    updatePositions(pgm1);
+    iter++;
+    } while(iter < 20);
+
+    for(auto point : pgm1.posMap)
     {   
         //rcptr<SqrtMVG> mvgFactor = dynamic_pointer_cast<SqrtMVG>(cluster.second);
         //cout << mvgFactor->getMean() << endl;
-        //cout << cluster.first << endl;
+        cout << point.second << endl;
     }
 
 }
@@ -129,6 +139,7 @@ void readPosFile(const string fileString, gaussian_pgm &gpgm, const char delimit
         } 
 
     }
+    gpgm.posMap_old = gpgm.posMap;
 
     fin.close();
     return;
@@ -175,6 +186,7 @@ void readDistFile(const string fileString, gaussian_pgm &gpgm, const char delimi
     return;
 }
 
+// TODO: check implicit observation of lower dimensional points eg. if 2d point is given in 3d set, third dim is observed to be 0
 void initRVs(gaussian_pgm &gpgm)
 {
     // step through position map and add RV for every axis to mirrored map
@@ -378,6 +390,56 @@ void reconstructFromSigmaPoints(gaussian_pgm &gpgm)
     return;
 }
 
+void updateClusters(gaussian_pgm &gpgm)
+{
+    for(auto& cluster : gpgm.clusters)
+    {
+        cluster.second = gpgm.joint_factor->marginalize(cluster.second->getVars())->normalize();
+    }
+    return;
+}
+
+// TODO: change to lambda damping
+void updatePositions(gaussian_pgm &gpgm)
+{
+    rcptr<Factor> query;
+    rcptr<SqrtMVG> mvgQuery;
+    for(auto& point : gpgm.posMap)
+    {   
+        // step through point dimensions
+        for(unsigned i = 0; i < gpgm.dimMap[point.first]; i++)
+        {
+            // find RV of current dim of point
+            RVIdType posRV = gpgm.posRVsMap[point.first][i];
+            // check if observed
+            auto itr = gpgm.obsMap.find(posRV);
+            if(itr != gpgm.obsMap.end())
+            {   
+                // point dim observed, use observed value
+                // update old_pos of dim
+                gpgm.posMap_old[point.first][i] = point.second[i];
+                // update pos of dim
+                point.second[i] = double(itr->second);
+                // update tol of dim
+                gpgm.posTolMap[point.first][i] = 0;
+            }
+            else
+            {
+                // point dim unobserved, query joint
+                query = gpgm.joint_factor->marginalize({posRV})->normalize();
+                mvgQuery = std::dynamic_pointer_cast<SqrtMVG>(query);
+                // update old_pos of dim
+                gpgm.posMap_old[point.first][i] = point.second[i];
+                // update pos of dim
+                point.second[i] = mvgQuery->getMean()[0];
+                // update tol of dim
+                gpgm.posTolMap[point.first][i] = std::max( gpgm.posTolMap[point.first][i]*gpgm.lambda, sqrt( mvgQuery->getCov()(0,0) ) );
+            }
+        }
+    }
+
+    return;
+}
 // get distance between two points of arbitrary dimension
 double getDist(const pair<vector<double>, vector<double>> pointsPair)
 {
