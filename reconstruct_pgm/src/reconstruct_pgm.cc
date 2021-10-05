@@ -7,7 +7,7 @@
 // standard headers
 #include <iostream>  // cout, endl, flush, cin, cerr
 #include <string>  // string, stod
-#include <cmath>   // sqrt
+#include <cmath>   // sqrt, abs
 
 
 #include "discretetable.hpp"
@@ -26,6 +26,7 @@ struct gaussian_pgm
 {
     
     double lambda = 0;
+    double prev_change = 0;
     unsigned iter = 0;
     
     map< unsigned, unsigned> dimMap; // map <point_num, dim>
@@ -58,6 +59,7 @@ void updateClusters(gaussian_pgm &gpgm);
 void updatePositions(gaussian_pgm &gpgm);
 
 double getDist(const pair<vector<double>, vector<double>> pointsPair);
+double getPosChange(gaussian_pgm &gpgm);
 
 template<typename TK, typename TV> std::vector<TK> extract_keys(std::map<TK, TV> const& input_map);
 template<typename TK, typename TV> std::vector<TV> extract_values(std::map<TK, TV> const& input_map);
@@ -66,27 +68,32 @@ int main(int, char *argv[])
 {
     //string dataString = "../../cube_gen/Data/dists.csv";
     string posDdataString = "../Data/initpos10.csv";
-    string distDataString = "../Data/dists1.csv";
+    //string distDataString = "../Data/dists1.csv";
+    string distDataString = "../Data/dists_inter_5_noise_1%.csv";
     //string resultString = "../result.csv";
-    double lambda = 0.3;
-    double tolerance = 0.1;
-    unsigned iter = 0;
+    double lambda = 0.999;
+    double tolerance = 10;
+    unsigned iter = 25;
 
     gaussian_pgm pgm1;
 
     pgm1.lambda = lambda;
     readPosFile(posDdataString, pgm1, ' ', false, false);
-    readDistFile(distDataString, pgm1, ' ', false, false);
+    //readDistFile(distDataString, pgm1, ' ', false, false);
+    readDistFile(distDataString, pgm1, ',');
     initRVs(pgm1);
     
     do{
-    cout << iter << endl;
+    cout << "iter: "<< pgm1.iter << endl;
+    pgm1.prev_change = getPosChange(pgm1);
     initClusters(pgm1);
     reconstructFromSigmaPoints(pgm1);
     updateClusters(pgm1);
     updatePositions(pgm1);
-    iter++;
-    } while(iter < 20);
+    cout << "change: " << getPosChange(pgm1) << endl;
+    cout << "change dif: " << abs(pgm1.prev_change - getPosChange(pgm1)) << endl;
+    pgm1.iter++;
+    } while((abs(pgm1.prev_change - getPosChange(pgm1)) > tolerance)&&(pgm1.iter < iter));
 
     for(auto point : pgm1.posMap)
     {   
@@ -464,6 +471,21 @@ double getDist(const pair<vector<double>, vector<double>> pointsPair)
     }
 
     return sqrt(square_sum);
+}
+
+double getPosChange(gaussian_pgm &gpgm)
+{
+    double totalChange = 0;
+    double dif = 0;
+    for(auto point : gpgm.posMap)
+    {
+        for(unsigned i = 0; i < gpgm.dimMap[point.first]; i++)
+        {
+            dif = abs(point.second[i] - gpgm.posMap_old[point.first][i]);
+            totalChange = totalChange + dif;
+        }
+    }
+    return totalChange;
 }
 
 // TODO: check if used
