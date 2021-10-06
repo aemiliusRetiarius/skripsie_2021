@@ -7,6 +7,7 @@
 // standard headers
 #include <iostream>  // cout, endl, flush, cin, cerr
 #include <string>  // string, stod
+#include <cstring> // strcmp
 #include <cmath>   // sqrt, abs
 
 
@@ -50,6 +51,7 @@ struct gaussian_pgm
 
 void readPosFile(const string fileString, gaussian_pgm &gpgm, const char delimiter=',', const bool discardLineFlag=true, const bool discardIndexFlag=true);
 void readDistFile(const string fileString, gaussian_pgm &gpgm, const char delimiter=',', const bool discardLineFlag=true, const bool discardIndexFlag=true);
+void writeResultFile(const string fileString, gaussian_pgm &gpgm, const char delimiter=',', const bool discardLineFlag=false, const bool discardIndexFlag=false);
 
 void initRVs(gaussian_pgm &gpgm);
 void repackageObs(gaussian_pgm &gpgm);
@@ -66,21 +68,66 @@ template<typename TK, typename TV> std::vector<TV> extract_values(std::map<TK, T
 
 int main(int, char *argv[])
 {
-    //string dataString = "../../cube_gen/Data/dists.csv";
-    string posDdataString = "../Data/initpos10.csv";
-    //string distDataString = "../Data/dists1.csv";
-    string distDataString = "../Data/dists_inter_5_noise_1%.csv";
-    //string resultString = "../result.csv";
-    double lambda = 0.999;
+    string posDataString = "";
+    string distDataString = "";
+    string resultDataString = "";
+
+    double lambda = 0.8;
     double tolerance = 10;
     unsigned iter = 25;
 
-    gaussian_pgm pgm1;
+    unsigned argIndex = 1;
+    while(argv[argIndex] != nullptr)
+    {   
+        if(!strcmp(argv[argIndex], "--p"))
+        {
+            posDataString = argv[argIndex+1];
+        }
+        else if(!strcmp(argv[argIndex], "--d"))
+        {
+            distDataString = argv[argIndex+1];
+        }
+        else if(!strcmp(argv[argIndex], "--r"))
+        {
+            resultDataString = argv[argIndex+1];
+        }
+        else if(!strcmp(argv[argIndex], "-l"))
+        {
+            lambda = stod(argv[argIndex+1]);
+        }
+        else if(!strcmp(argv[argIndex], "-t"))
+        {
+            tolerance = stod(argv[argIndex+1]);
+        }
+        else if(!strcmp(argv[argIndex], "-i"))
+        {
+            iter = (unsigned)stod(argv[argIndex+1]);
+        }
+        else
+        {
+            cerr << "malformed parameters" << endl;
+            exit(-1);
+        }
+        argIndex = argIndex + 2;
+    }
+    //string dataString = "../../cube_gen/Data/dists.csv";
+    //string posDdataString = "../Data/initpos10.csv";
+    //string posDdataString = "~/devel/skripsie_2021/reconstruct_pgm/Data/init_pos_std_10.csv";
+    //string posDdataString = argv[1];
+    //string distDataString = "../Data/dists1.csv";
+    //string distDataString = "~/devel/skripsie_2021/reconstruct_pgm/Data/dists_inter_5_noise_1%.csv";
+    //string distDataString = argv[2];
+    //string resultString = "../result.csv";
+    //cout << posDataString << endl;
+    //cout << distDataString << endl;
 
+    gaussian_pgm pgm1;
     pgm1.lambda = lambda;
-    readPosFile(posDdataString, pgm1, ' ', false, false);
+    readPosFile(posDataString, pgm1, ' ', false, false);
+    //readPosFile(posDataString, pgm1, ',');
     //readDistFile(distDataString, pgm1, ' ', false, false);
     readDistFile(distDataString, pgm1, ',');
+
     initRVs(pgm1);
     
     do{
@@ -101,6 +148,16 @@ int main(int, char *argv[])
         //cout << mvgFactor->getMean() << endl;
         cout << point.second << endl;
     }
+
+    cout << endl;
+    for(auto point : pgm1.posTolMap)
+    {   
+        //rcptr<SqrtMVG> mvgFactor = dynamic_pointer_cast<SqrtMVG>(cluster.second);
+        //cout << mvgFactor->getMean() << endl;
+        cout << point.second << endl;
+    }
+
+    writeResultFile(resultDataString, pgm1);
 
 }
 
@@ -190,6 +247,33 @@ void readDistFile(const string fileString, gaussian_pgm &gpgm, const char delimi
     }
 
     fin.close();
+    return;
+}
+
+// TODO: write result file for points with arbitrary dim
+void writeResultFile(const string fileString, gaussian_pgm &gpgm, const char delimiter, const bool discardLineFlag, const bool discardIndexFlag)
+{
+    fstream fout;
+    // opens an existing csv file or creates a new file.
+    fout.open(fileString, ios::out | ios::trunc);
+    if(!discardIndexFlag) fout << ",point_num,x_pos,y_pos,z_pos,x_tol,y_tol,z_tol" <<"\n";
+    
+    unsigned index = 0;
+    for(auto point : gpgm.posMap)
+    {
+        if (!discardIndexFlag) fout << index << delimiter;
+        fout << point.first << delimiter;
+        fout << point.second[0] << delimiter;
+        fout << point.second[1] << delimiter;
+        fout << point.second[2] << delimiter;
+        fout << gpgm.posTolMap[point.first][0] << delimiter;
+        fout << gpgm.posTolMap[point.first][1] << delimiter;
+        fout << gpgm.posTolMap[point.first][2];
+        fout << endl;
+        index++;
+    }
+
+    fout.close();
     return;
 }
 
