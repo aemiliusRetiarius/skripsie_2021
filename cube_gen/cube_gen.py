@@ -2,6 +2,7 @@
 #TODO: fix noise handling
 #TODO: sort chosen targets
 #TODO: ensure min connection num is satisfied
+#TODO: encase pandas ops in cython for performance, https://pandas.pydata.org/pandas-docs/stable/user_guide/enhancingperf.html
 
 import numpy as np
 import pandas as pd
