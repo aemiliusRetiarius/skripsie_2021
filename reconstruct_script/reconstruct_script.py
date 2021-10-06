@@ -1,5 +1,6 @@
 #TODO: check if casting sys.argv is redundant
 #TODO: Add parameter for passing existing matlab engine connection
+#TODO: check order of relative error
 
 import numpy as np
 import pandas as pd
@@ -155,7 +156,7 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
         if(rotate == False):
             warnings.warn('Rotation flag not set to true, returning unrotated error')
         if err_ord == 'rel':
-            return ((np.linalg.norm((res-true_points), 2)) / np.linalg.norm((true_points), 2))
+            return ((np.linalg.norm(res-true_points)) / np.linalg.norm(true_points))
         else:
             return np.linalg.norm((res-true_points), err_ord)
     
@@ -168,7 +169,7 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
         if(rotate == False):
             warnings.warn('Rotation flag not set to true, returning unrotated error')
         if err_ord == 'rel':
-            return ((np.linalg.norm((res-true_points), 2)) / np.linalg.norm((true_points), 2)) , res
+            return ((np.linalg.norm(res-true_points)) / np.linalg.norm(true_points)) , res
         else:
             return np.linalg.norm((res-true_points), err_ord), res
 
