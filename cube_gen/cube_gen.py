@@ -1,5 +1,7 @@
 #TODO: change points per face to be dynamic
 #TODO: fix noise handling
+#TODO: sort chosen targets
+#TODO: ensure min connection num is satisfied
 
 import numpy as np
 import pandas as pd
@@ -156,6 +158,8 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
 
     dist_df = dist_df.astype(int)
     dist_df['dist'] = dist_df.apply(lambda row: distance(row.source, row.target, noise_percent, verbosity), axis=1)
+    print(dist_df)
+    dist_df['tol'] = dist_df.apply(lambda row: row.dist*(noise_percent/100), axis=1)
     dist_df['changed'] = False
     
     error_num = int(len(dist_df.index)*(error_percent/100))
@@ -222,10 +226,10 @@ def get_point_coords(noise_std_dev=0):
     return points_df
 
 if(__name__ == '__main__'):
-    #df = gen_dist_df(98, 5, verbosity=4, noise_percent=10)
+    #df = gen_dist_df(98, 5, verbosity=4, noise_percent=1)
     #df.to_csv('dists_inter_5_noise_1%.csv')
     #print(distance(1,37,0))
-    print(encode_point(5))
-    print(encode_point(21))
-    print(encode_point(30))
-    #get_point_coords().to_csv('point_coords.csv')
+    #print(encode_point(5))
+    #print(encode_point(21))
+    #print(encode_point(30))
+    get_point_coords(noise_std_dev=50).to_csv('init_pos_std_50.csv')
