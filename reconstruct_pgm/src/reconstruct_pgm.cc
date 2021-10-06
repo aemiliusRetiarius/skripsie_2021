@@ -71,6 +71,7 @@ int main(int, char *argv[])
     string posDataString = "";
     string distDataString = "";
     string resultDataString = "";
+    bool nativeFormat = true;
 
     double lambda = 0.8;
     double tolerance = 10;
@@ -103,6 +104,29 @@ int main(int, char *argv[])
         {
             iter = (unsigned)stod(argv[argIndex+1]);
         }
+        else if(!strcmp(argv[argIndex], "-f"))
+        {
+            string testString = argv[argIndex+1];
+            for(auto& c : testString)
+            {
+                c = tolower(c);
+            }
+            const char * testChar = testString.c_str();
+            
+            if(!strcmp(testChar, "true"))
+            {
+                nativeFormat = true;
+            }
+            else if(!strcmp(testChar, "false"))
+            {
+                nativeFormat = false;
+            }
+            else
+            {
+                cerr << "Boolean parameter not parseable" << endl;
+                exit(-1);
+            }
+        }
         else
         {
             cerr << "malformed parameters" << endl;
@@ -123,10 +147,9 @@ int main(int, char *argv[])
 
     gaussian_pgm pgm1;
     pgm1.lambda = lambda;
-    readPosFile(posDataString, pgm1, ' ', false, false);
-    //readPosFile(posDataString, pgm1, ',');
-    //readDistFile(distDataString, pgm1, ' ', false, false);
-    readDistFile(distDataString, pgm1, ',');
+    if (nativeFormat) {readPosFile(posDataString, pgm1, ',');} else {readPosFile(posDataString, pgm1, ' ', false, false);}
+    if (nativeFormat) {readDistFile(distDataString, pgm1, ',');} else {readDistFile(distDataString, pgm1, ' ', false, false);}
+    
 
     initRVs(pgm1);
     
@@ -141,7 +164,7 @@ int main(int, char *argv[])
     cout << "change dif: " << abs(pgm1.prev_change - getPosChange(pgm1)) << endl;
     pgm1.iter++;
     } while((abs(pgm1.prev_change - getPosChange(pgm1)) > tolerance)&&(pgm1.iter < iter));
-
+    /**
     for(auto point : pgm1.posMap)
     {   
         //rcptr<SqrtMVG> mvgFactor = dynamic_pointer_cast<SqrtMVG>(cluster.second);
@@ -156,8 +179,8 @@ int main(int, char *argv[])
         //cout << mvgFactor->getMean() << endl;
         cout << point.second << endl;
     }
-
-    writeResultFile(resultDataString, pgm1);
+    **/
+    if(nativeFormat) {writeResultFile(resultDataString, pgm1);} else {writeResultFile(resultDataString, pgm1, ' ', true, true);}
 
 }
 
@@ -237,7 +260,7 @@ void readDistFile(const string fileString, gaussian_pgm &gpgm, const char delimi
         // remove first col with index if flag set
         if(discardIndexFlag) {row.erase(row.begin());}
         // check format for record
-        PRLITE_ASSERT(row.size() == 4, "Badly formatted line in " << fileString);
+        PRLITE_ASSERT(row.size() <= 5, "Badly formatted line in " << fileString);
         
         // fill pgm dist and distTol maps
         p1 = (unsigned)stod(row[0]);
