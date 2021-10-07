@@ -159,7 +159,6 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
 
     dist_df = dist_df.astype(int)
     dist_df['dist'] = dist_df.apply(lambda row: distance(row.source, row.target, noise_percent, verbosity), axis=1)
-    print(dist_df)
     dist_df['tol'] = dist_df.apply(lambda row: row.dist*(noise_percent/100), axis=1)
     dist_df['changed'] = False
     
