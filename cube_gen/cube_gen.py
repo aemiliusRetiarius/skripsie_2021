@@ -6,6 +6,7 @@
 
 import numpy as np
 import pandas as pd
+import math
 from random import uniform, randrange
 
 
@@ -159,7 +160,6 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
 
     dist_df = dist_df.astype(int)
     dist_df['dist'] = dist_df.apply(lambda row: distance(row.source, row.target, noise_percent, verbosity), axis=1)
-    dist_df['tol'] = dist_df.apply(lambda row: row.dist*(noise_percent/100), axis=1)
     dist_df['changed'] = False
     
     error_num = int(len(dist_df.index)*(error_percent/100))
@@ -208,7 +208,11 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
             if verbosity > 3: print('New distance: ', float(new_dist))
 
     if verbosity > 0 and error_num > 0: print("Number of records changed: ", error_num)
+    
+    dist_df['tol'] = dist_df.apply(lambda row: row.dist*(noise_percent/100), axis=1)
 
+    # reorder colums to ensure compatibility with C++ script
+    dist_df = dist_df[["source","target","dist","tol","changed"]]
     return dist_df
 
 def get_point_coords(noise_std_dev=0):
@@ -221,6 +225,20 @@ def get_point_coords(noise_std_dev=0):
         y_pos = np.random.normal(point[1,0], noise_std_dev)
         z_pos = np.random.normal(point[2,0], noise_std_dev)
         point_df = pd.DataFrame([[i+1,x_pos,y_pos,z_pos,noise_std_dev,noise_std_dev,noise_std_dev]],columns=['point_id','x_pos', 'y_pos','z_pos','x_tol','y_tol','z_tol'])
+        points_df = points_df.append(point_df, ignore_index=True)
+
+    return points_df
+
+def get_uniform_point_coords(init_cube_length=100):
+    points_df = pd.DataFrame(columns=['point_id','x_pos', 'y_pos','z_pos','x_tol','y_tol','z_tol'])
+    
+    for i in range(98):
+
+        x_pos = np.random.uniform(0, init_cube_length)
+        y_pos = np.random.uniform(0, init_cube_length)
+        z_pos = np.random.uniform(0, init_cube_length)
+        std_dev = math.sqrt(3*(init_cube_length*init_cube_length)) / 3.5 # check 3.5 -> 3
+        point_df = pd.DataFrame([[i+1,x_pos,y_pos,z_pos,std_dev,std_dev,std_dev]],columns=['point_id','x_pos', 'y_pos','z_pos','x_tol','y_tol','z_tol'])
         points_df = points_df.append(point_df, ignore_index=True)
 
     return points_df
