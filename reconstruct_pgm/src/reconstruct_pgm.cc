@@ -397,7 +397,7 @@ void initClusters(gaussian_pgm &gpgm)
     }
 
     // step through cluster prototypes and build clusters
-    for(auto cluster : gpgm.clusterRVsMap)
+    for(auto& cluster : gpgm.clusterRVsMap)
     {
         unsigned p1 = cluster.first.first;
         unsigned p2 = cluster.first.second;
@@ -406,12 +406,16 @@ void initClusters(gaussian_pgm &gpgm)
         {
             if (priorFactors[p2] == nullptr) 
             {
-            cerr << __FILE__ << __LINE__ << " unexpected distance between two fully observed points "
-                 << p1 << " and " << p2 << endl;
-            cerr << "Rather just remove this distance, it does not contribute anything!\n";
-            exit(-1);
+                //cerr << __FILE__ << __LINE__ << " unexpected distance between two fully observed points "
+                     //<< p1 << " and " << p2 << endl;
+                // cerr << "Rather just remove this distance, it does not contribute anything!\n";
+                // exit(-1);
+                // gpgm.clusterRVsMap.erase({p1,p2});
             } // if
-            gpgm.clusters[{p1,p2}] = priorFactors[p2];
+            else
+            {
+                gpgm.clusters[{p1,p2}] = priorFactors[p2];
+            }
         }
         else if(priorFactors[p2] == nullptr)
         {
