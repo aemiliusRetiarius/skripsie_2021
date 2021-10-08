@@ -281,3 +281,4 @@ if(__name__ == '__main__'):
     #get_point_coords(noise_std_dev=50).to_csv('init_pos_std_50.csv')
     #df.to_csv('dists_TEST.csv')
     #print(df)
+    pass
