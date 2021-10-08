@@ -1,6 +1,8 @@
 #TODO: check if casting sys.argv is redundant
 #TODO: Add parameter for passing existing matlab engine connection
-#TODO: check order of relative error
+#TODO: rerun performance analysis with rel error
+#TODO: change rotation matrix to use subset of points? force some values to zero for affine transformation?
+#      rot matrix has det != 1
 
 import numpy as np
 import pandas as pd
@@ -20,6 +22,7 @@ from cube_gen import gen_dist_df, encode_point
 import matlab.engine
 
 from sklearn.manifold import MDS
+from sklearn.metrics import euclidean_distances
 
 import matplotlib.pyplot as plt
 from matplotlib import cm
@@ -130,6 +133,7 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
                 true_points = np.hstack((true_points, true_point))
         true_points = true_points.T
 
+    unrot_res = res
     if(rotate == True):
 
         trans = np.dot(np.linalg.pinv(res), true_points)
@@ -157,6 +161,10 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
             warnings.warn('Rotation flag not set to true, returning unrotated error')
         if err_ord == 'rel':
             return ((np.linalg.norm(res-true_points)) / np.linalg.norm(true_points))
+        elif err_ord == 'edm_rel':
+            true_edm = euclidean_distances(true_points)
+            res_edm = euclidean_distances(unrot_res)
+            return ((np.linalg.norm(true_edm-res_edm)) / np.linalg.norm(true_edm))
         else:
             return np.linalg.norm((res-true_points), err_ord)
     
@@ -170,9 +178,12 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
             warnings.warn('Rotation flag not set to true, returning unrotated error')
         if err_ord == 'rel':
             return ((np.linalg.norm(res-true_points)) / np.linalg.norm(true_points)) , res
+        elif err_ord == 'edm_rel':
+            true_edm = euclidean_distances(true_points)
+            res_edm = euclidean_distances(unrot_res)
+            return ((np.linalg.norm(true_edm-res_edm)) / np.linalg.norm(true_edm)), res
         else:
             return np.linalg.norm((res-true_points), err_ord), res
-
 
 if __name__ == '__main__':
     #reconstruct_file('.\cube_gen\Data\dists_test_40.csv', 98)
@@ -237,6 +248,8 @@ if __name__ == '__main__':
 
                 if(str(sys.argv[param+1]) == 'rel'):
                     return_err_ord = 'rel'
+                elif(str(sys.argv[param+1]) == 'edm_rel'):
+                    return_err_ord = 'edm_rel'
                 else:
                     return_err_ord = int(sys.argv[param+1])
             
