@@ -123,7 +123,7 @@ def check_reverse(target, source, dist_df):
 def iterate_connections(cons):
     return cons + 1
 
-def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosity=0):
+def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosity=0, enforce_cons=False):
 
     if verbosity > 0: print(">>>>>>>>>>>")
     if verbosity > 0: print("Generating distance list...")
@@ -158,6 +158,8 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
         dist_df = dist_df.append(append_df, ignore_index=True)
         
 
+    if enforce_cons: dist_df = enforce_connections(dist_df, num_points, req_cons, verbosity=verbosity)
+    dist_df = dist_df.sort_values(['source', 'target'], ascending=[True, True])
     dist_df = dist_df.astype(int)
     dist_df['dist'] = dist_df.apply(lambda row: distance(row.source, row.target, noise_percent, verbosity), axis=1)
     dist_df['changed'] = False
@@ -243,11 +245,39 @@ def get_uniform_point_coords(init_cube_length=100):
 
     return points_df
 
+def enforce_connections(dist_df, num_points, req_cons, verbosity=0):
+
+    for i in range(98):
+        
+        condition_1 = dist_df.source == i+1
+        condition_2 = dist_df.target == i+1
+
+        point_cons = len(dist_df[condition_1 | condition_2].index)
+        if verbosity > 3: print("Point number ", i+1, " cons: ", point_cons)
+        for j in range(req_cons-point_cons):    
+            if point_cons < req_cons:
+                
+                if verbosity > 2: print("Point number ", i+1, "cons: ",point_cons+j, " < ", req_cons ," ,adding con") 
+
+                rand_target = randrange(1,num_points)
+                while(rand_target == i+1 or check_reverse(rand_target, i+1, dist_df) or check_reverse(i+1, rand_target, dist_df)):
+                    rand_target = randrange(1,num_points)
+                if verbosity > 2: print("New target: ", rand_target)
+
+                append_df = pd.DataFrame([[i+1, rand_target]], columns=['source', 'target'])
+                dist_df = dist_df.append(append_df, ignore_index=True)
+           
+    return dist_df
+
+
+
 if(__name__ == '__main__'):
-    #df = gen_dist_df(98, 5, verbosity=4, noise_percent=1)
+    #df = gen_dist_df(98, 5, verbosity=3, noise_percent=0, enforce_cons=True)
     #df.to_csv('dists_inter_5_noise_1%.csv')
     #print(distance(1,37,0))
     #print(encode_point(5))
     #print(encode_point(21))
     #print(encode_point(30))
-    get_point_coords(noise_std_dev=50).to_csv('init_pos_std_50.csv')
+    #get_point_coords(noise_std_dev=50).to_csv('init_pos_std_50.csv')
+    #df.to_csv('dists_TEST.csv')
+    #print(df)
