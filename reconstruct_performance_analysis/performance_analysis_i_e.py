@@ -37,12 +37,7 @@ error_end = 101
 error_step = 4
 error_axis = np.arange(error_start, error_end, error_step)
 
-noise_start = 0
-noise_end = 51
-noise_step = 5
-noise_axis = np.arange(noise_start, noise_end, noise_step)
-
-target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z.mat")
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_err_0_101_edm_rel_1.mat")
 ##############
 
 def get_err(index, intercon, error):
