@@ -2,4 +2,8 @@
 /home/emile/devel/skripsie_2021/reconstruct_pgm/build/CMakeFiles/edit_cache.dir
 /home/emile/devel/skripsie_2021/reconstruct_pgm/build/src/CMakeFiles/rebuild_cache.dir
 /home/emile/devel/skripsie_2021/reconstruct_pgm/build/src/CMakeFiles/edit_cache.dir
+/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src/CMakeFiles/reconstruct_pgm3.dir
+/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src/CMakeFiles/reconstruct_pgm2.dir
+/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src/CMakeFiles/reconstruct_pgm1.dir
+/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src/CMakeFiles/reconstruct_pgm0.dir
 /home/emile/devel/skripsie_2021/reconstruct_pgm/build/src/CMakeFiles/reconstruct_pgm.dir

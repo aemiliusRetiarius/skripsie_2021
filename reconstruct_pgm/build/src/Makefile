@@ -111,6 +111,66 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
+src/CMakeFiles/reconstruct_pgm3.dir/rule:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/reconstruct_pgm3.dir/rule
+.PHONY : src/CMakeFiles/reconstruct_pgm3.dir/rule
+
+# Convenience name for target.
+reconstruct_pgm3: src/CMakeFiles/reconstruct_pgm3.dir/rule
+
+.PHONY : reconstruct_pgm3
+
+# fast build rule for target.
+reconstruct_pgm3/fast:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm3.dir/build.make src/CMakeFiles/reconstruct_pgm3.dir/build
+.PHONY : reconstruct_pgm3/fast
+
+# Convenience name for target.
+src/CMakeFiles/reconstruct_pgm2.dir/rule:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/reconstruct_pgm2.dir/rule
+.PHONY : src/CMakeFiles/reconstruct_pgm2.dir/rule
+
+# Convenience name for target.
+reconstruct_pgm2: src/CMakeFiles/reconstruct_pgm2.dir/rule
+
+.PHONY : reconstruct_pgm2
+
+# fast build rule for target.
+reconstruct_pgm2/fast:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm2.dir/build.make src/CMakeFiles/reconstruct_pgm2.dir/build
+.PHONY : reconstruct_pgm2/fast
+
+# Convenience name for target.
+src/CMakeFiles/reconstruct_pgm1.dir/rule:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/reconstruct_pgm1.dir/rule
+.PHONY : src/CMakeFiles/reconstruct_pgm1.dir/rule
+
+# Convenience name for target.
+reconstruct_pgm1: src/CMakeFiles/reconstruct_pgm1.dir/rule
+
+.PHONY : reconstruct_pgm1
+
+# fast build rule for target.
+reconstruct_pgm1/fast:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm1.dir/build.make src/CMakeFiles/reconstruct_pgm1.dir/build
+.PHONY : reconstruct_pgm1/fast
+
+# Convenience name for target.
+src/CMakeFiles/reconstruct_pgm0.dir/rule:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/reconstruct_pgm0.dir/rule
+.PHONY : src/CMakeFiles/reconstruct_pgm0.dir/rule
+
+# Convenience name for target.
+reconstruct_pgm0: src/CMakeFiles/reconstruct_pgm0.dir/rule
+
+.PHONY : reconstruct_pgm0
+
+# fast build rule for target.
+reconstruct_pgm0/fast:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm0.dir/build.make src/CMakeFiles/reconstruct_pgm0.dir/build
+.PHONY : reconstruct_pgm0/fast
+
+# Convenience name for target.
 src/CMakeFiles/reconstruct_pgm.dir/rule:
 	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/reconstruct_pgm.dir/rule
 .PHONY : src/CMakeFiles/reconstruct_pgm.dir/rule
@@ -131,6 +191,10 @@ reconstruct_pgm.o: reconstruct_pgm.cc.o
 
 # target to build an object file
 reconstruct_pgm.cc.o:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm3.dir/build.make src/CMakeFiles/reconstruct_pgm3.dir/reconstruct_pgm.cc.o
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm2.dir/build.make src/CMakeFiles/reconstruct_pgm2.dir/reconstruct_pgm.cc.o
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm1.dir/build.make src/CMakeFiles/reconstruct_pgm1.dir/reconstruct_pgm.cc.o
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm0.dir/build.make src/CMakeFiles/reconstruct_pgm0.dir/reconstruct_pgm.cc.o
 	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm.dir/build.make src/CMakeFiles/reconstruct_pgm.dir/reconstruct_pgm.cc.o
 .PHONY : reconstruct_pgm.cc.o
 
@@ -140,6 +204,10 @@ reconstruct_pgm.i: reconstruct_pgm.cc.i
 
 # target to preprocess a source file
 reconstruct_pgm.cc.i:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm3.dir/build.make src/CMakeFiles/reconstruct_pgm3.dir/reconstruct_pgm.cc.i
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm2.dir/build.make src/CMakeFiles/reconstruct_pgm2.dir/reconstruct_pgm.cc.i
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm1.dir/build.make src/CMakeFiles/reconstruct_pgm1.dir/reconstruct_pgm.cc.i
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm0.dir/build.make src/CMakeFiles/reconstruct_pgm0.dir/reconstruct_pgm.cc.i
 	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm.dir/build.make src/CMakeFiles/reconstruct_pgm.dir/reconstruct_pgm.cc.i
 .PHONY : reconstruct_pgm.cc.i
 
@@ -149,6 +217,10 @@ reconstruct_pgm.s: reconstruct_pgm.cc.s
 
 # target to generate assembly for a file
 reconstruct_pgm.cc.s:
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm3.dir/build.make src/CMakeFiles/reconstruct_pgm3.dir/reconstruct_pgm.cc.s
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm2.dir/build.make src/CMakeFiles/reconstruct_pgm2.dir/reconstruct_pgm.cc.s
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm1.dir/build.make src/CMakeFiles/reconstruct_pgm1.dir/reconstruct_pgm.cc.s
+	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm0.dir/build.make src/CMakeFiles/reconstruct_pgm0.dir/reconstruct_pgm.cc.s
 	cd /home/emile/devel/skripsie_2021/reconstruct_pgm/build && $(MAKE) -f src/CMakeFiles/reconstruct_pgm.dir/build.make src/CMakeFiles/reconstruct_pgm.dir/reconstruct_pgm.cc.s
 .PHONY : reconstruct_pgm.cc.s
 
@@ -160,6 +232,10 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... reconstruct_pgm3"
+	@echo "... reconstruct_pgm2"
+	@echo "... reconstruct_pgm1"
+	@echo "... reconstruct_pgm0"
 	@echo "... reconstruct_pgm"
 	@echo "... reconstruct_pgm.o"
 	@echo "... reconstruct_pgm.i"
