@@ -1,7 +1,5 @@
 #TODO: change points per face to be dynamic
 #TODO: fix noise handling
-#TODO: sort chosen targets
-#TODO: ensure min connection num is satisfied
 #TODO: encase pandas ops in cython for performance, https://pandas.pydata.org/pandas-docs/stable/user_guide/enhancingperf.html
 
 import numpy as np
@@ -211,7 +209,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
 
     if verbosity > 0 and error_num > 0: print("Number of records changed: ", error_num)
     
-    dist_df['tol'] = dist_df.apply(lambda row: row.dist*(noise_percent/100), axis=1)
+    dist_df['tol'] = dist_df.apply(lambda row: row.dist*(noise_percent/100)* 0.28571428, axis=1)
 
     # reorder colums to ensure compatibility with C++ script
     dist_df = dist_df[["source","target","dist","tol","changed"]]
