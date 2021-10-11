@@ -36,3 +36,15 @@ include_directories(${GLINEAR_INCLUDE_DIRS} ${EMDW_INCLUDE_DIRS})
 # My app
 add_executable(reconstruct_pgm reconstruct_pgm.cc)
 target_link_libraries(reconstruct_pgm ${GLINEAR_LIBRARIES} ${BOOST_LIBRARIES} ${EMDW_LIBRARIES} ${PRLITE_LIBRARIES})
+
+add_executable(reconstruct_pgm0 reconstruct_pgm.cc)
+target_link_libraries(reconstruct_pgm0 ${GLINEAR_LIBRARIES} ${BOOST_LIBRARIES} ${EMDW_LIBRARIES} ${PRLITE_LIBRARIES})
+
+add_executable(reconstruct_pgm1 reconstruct_pgm.cc)
+target_link_libraries(reconstruct_pgm1 ${GLINEAR_LIBRARIES} ${BOOST_LIBRARIES} ${EMDW_LIBRARIES} ${PRLITE_LIBRARIES})
+
+add_executable(reconstruct_pgm2 reconstruct_pgm.cc)
+target_link_libraries(reconstruct_pgm2 ${GLINEAR_LIBRARIES} ${BOOST_LIBRARIES} ${EMDW_LIBRARIES} ${PRLITE_LIBRARIES})
+
+add_executable(reconstruct_pgm3 reconstruct_pgm.cc)
+target_link_libraries(reconstruct_pgm3 ${GLINEAR_LIBRARIES} ${BOOST_LIBRARIES} ${EMDW_LIBRARIES} ${PRLITE_LIBRARIES})
