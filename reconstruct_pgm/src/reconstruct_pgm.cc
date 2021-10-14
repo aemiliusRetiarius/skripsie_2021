@@ -161,9 +161,9 @@ int main(int, char *argv[])
     updateClusters(pgm1);
     updatePositions(pgm1);
     cout << "change: " << getPosChange(pgm1) << endl;
-    cout << "change dif: " << abs(pgm1.prev_change - getPosChange(pgm1)) << endl;
+    // cout << "change dif: " << abs(pgm1.prev_change - getPosChange(pgm1)) << endl; TODO: remove variables?
     pgm1.iter++;
-    } while((abs(pgm1.prev_change - getPosChange(pgm1)) > tolerance)&&(pgm1.iter < iter));
+    } while((getPosChange(pgm1) > tolerance)&&(pgm1.iter < iter));
     /**
     for(auto point : pgm1.posMap)
     {   
