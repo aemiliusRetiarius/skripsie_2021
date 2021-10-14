@@ -208,7 +208,10 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
             if verbosity > 3: print('New distance: ', float(new_dist))
 
     if verbosity > 0 and error_num > 0: print("Number of records changed: ", error_num)
-    
+
+    if enforce_cons: dist_df = enforce_connections(dist_df, num_points, req_cons, post_error=True, noise_percent=noise_percent ,verbosity=verbosity)
+    dist_df = dist_df.sort_values(['source', 'target'], ascending=[True, True])
+
     dist_df['tol'] = dist_df.apply(lambda row: row.dist*(noise_percent/100)* 0.28571428, axis=1)
 
     # reorder colums to ensure compatibility with C++ script
@@ -243,7 +246,7 @@ def get_uniform_point_coords(init_cube_length=100):
 
     return points_df
 
-def enforce_connections(dist_df, num_points, req_cons, verbosity=0):
+def enforce_connections(dist_df, num_points, req_cons, post_error=False, noise_percent=0, verbosity=0):
 
     for i in range(98):
         
@@ -261,10 +264,13 @@ def enforce_connections(dist_df, num_points, req_cons, verbosity=0):
                 while(rand_target == i+1 or check_reverse(rand_target, i+1, dist_df) or check_reverse(i+1, rand_target, dist_df)):
                     rand_target = randrange(1,num_points)
                 if verbosity > 2: print("New target: ", rand_target)
+                if not post_error:
+                    append_df = pd.DataFrame([[i+1, rand_target]], columns=['source', 'target'])
+                    dist_df = dist_df.append(append_df, ignore_index=True)
+                else:
+                    append_df = pd.DataFrame([[i+1, rand_target, distance(i+1, rand_target, verbosity), False]], columns=['source', 'target', 'dist', 'changed'])
+                    dist_df = dist_df.append(append_df, ignore_index=True)
 
-                append_df = pd.DataFrame([[i+1, rand_target]], columns=['source', 'target'])
-                dist_df = dist_df.append(append_df, ignore_index=True)
-           
     return dist_df
 
 
