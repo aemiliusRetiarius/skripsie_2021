@@ -27,7 +27,7 @@ import time
 ##Globals
 
 #intercon_axis = np.arange(5, 98, 2)
-intercon_start = 93
+intercon_start = 5
 intercon_end = 98
 intercon_step = 4
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
@@ -38,11 +38,11 @@ error_step = 4
 error_axis = np.arange(error_start, error_end, error_step)
 
 noise_start = 0
-noise_end = 101
+noise_end = 10 #101
 noise_step = 4
 noise_axis = np.arange(noise_start, noise_end, noise_step)
 
-target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z.mat")
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_test.mat")
 ##############
 
 def get_err(index, intercon, error):
@@ -73,7 +73,7 @@ def step_params(intercon_1_d, error_1_d):
 
 start_time = time.time()
 
-X, Y = np.meshgrid(intercon_axis, error_axis)
+X, Y = np.meshgrid(intercon_axis, noise_axis)
 
 pool = mp.Pool(processes=4)
 
