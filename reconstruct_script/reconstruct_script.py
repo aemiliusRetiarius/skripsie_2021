@@ -21,6 +21,7 @@ from cube_gen import gen_dist_df, encode_point
 
 import matlab.engine
 
+from scipy.spatial.transform import Rotation
 from sklearn.manifold import MDS
 from sklearn.metrics import euclidean_distances
 
@@ -117,8 +118,9 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
     edm = scipy.io.loadmat(target_path)
 
     if verbosity > 0: print('Loaded matrix shape: ' + str(edm['ans'].shape))
-    if verbosity > 0: verbosity = verbosity - 1
-    embedding = MDS(n_components=3, verbose=verbosity, dissimilarity='precomputed', max_iter=3000, eps=1e-12)
+    mds_verbosity = 0
+    if verbosity > 0: mds_verbosity = verbosity - 1
+    embedding = MDS(n_components=3, verbose=mds_verbosity, dissimilarity='precomputed', max_iter=3000, eps=1e-12)
     res = embedding.fit_transform(edm['ans'])
     if verbosity > 0: print("Points Reconstructed")
     if verbosity > 0: print(">>>>>>>>>>>")
@@ -136,9 +138,43 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
     unrot_res = res
     if(rotate == True):
 
-        trans = np.dot(np.linalg.pinv(res), true_points)
-        res = res - res[0, :]
-        res = np.dot(res, trans)
+        if verbosity > 0: print("Rotating reconstruction...")        
+        res = res - res[0,:]
+
+        true_points_subset = np.vstack((true_points[0,:],true_points[4,:],true_points[20,:],true_points[29,:]))
+        res_subset = np.vstack((res[0,:],res[4,:],res[20,:],res[29,:]))
+        #print(true_points_subset)
+        #print(res_subset)
+        
+        cross = np.cross(res_subset[1,:],res_subset[3,:])
+        normed_cross = cross/np.linalg.norm(cross)
+        if verbosity > 1: print("Subset cross product norm:", normed_cross)
+        normed_z  = res_subset[2,:]/np.linalg.norm(res_subset[2,:])
+        if verbosity > 1: print("True cross product norm:", normed_z)
+        dot_product = np.dot(normed_cross, normed_z)
+        if verbosity > 1: print("Subset and true normal dot product:", dot_product)
+
+        if(dot_product < 0):
+            if verbosity > 0: print("Changing reconstruction from LH to RH...")
+            normed_cross = normed_cross[:,np.newaxis]
+            householder = np.identity(3) - 2 * np.dot(normed_cross, normed_cross.T)
+
+            if verbosity > 2: print("Householder matrix:", householder)
+            if verbosity > 1: print("Householder determinant:", np.linalg.det(householder))
+            res = np.dot(res, householder)
+            res_subset = np.dot(res_subset, householder)
+        
+        trans_rot = Rotation.align_vectors(true_points_subset,res_subset)
+        #trans_rot = Rotation.align_vectors(true_points,res)
+        trans = np.asarray(trans_rot)[0].as_matrix()
+        #trans = np.dot(np.linalg.pinv(res), true_points)
+        if verbosity > 2: print("Rotation matrix:", trans)
+        if verbosity > 1: print("Rotation matrix determinant:",np.linalg.det(trans))
+        
+        res = trans_rot[0].apply(res)
+        #res = np.dot(res, trans)
+        if verbosity > 0: print("Reconstruction rotated")
+        if verbosity > 0: print(">>>>>>>>>>>")
 
     if projection != None:
         fig = plt.figure()
