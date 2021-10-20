@@ -54,7 +54,11 @@ intercon_end = 62 #62
 intercon_step = 4
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
 
-new_lambdas = [0.5, 0.8, 1, 5, 10, 100]
+fig = plt.figure()
+ax = plt.axes()
+
+#new_lambdas = [0.5, 0.8, 1, 5, 10, 100]
+new_lambdas = [0.8, 1, 1.25, 1.5, 2, 5, 10, 20]
 
 for new_lambda in new_lambdas:
     
@@ -65,6 +69,10 @@ for new_lambda in new_lambdas:
         zs[i] = get_avg_err(intercon_axis[i], new_lambda)
         
     plt.plot(intercon_axis, zs, label="lambda: "+str(new_lambda))
+
+ax.set_ylim([0, 1.1])
+ax.set_xlabel('Interconnection')
+ax.set_ylabel('Relative EDM Error')
 
 plt.legend()
 plt.show()
