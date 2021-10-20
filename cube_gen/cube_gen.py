@@ -7,6 +7,11 @@ import pandas as pd
 import math
 from random import uniform, randrange
 
+import os, sys
+sibling_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'common_tools')
+sys.path.insert(0, sibling_path)
+
+from common_tools import check_reverse, distance, enforce_connections
 
 # Front Face: (5x5)
 # 21--25
@@ -105,19 +110,6 @@ def encode_point (a):
 
         return encoded_point
 
-def distance(a, b, percentage, verbosity=0):
-    dist = np.linalg.norm(encode_point(a)-encode_point(b))
-    if verbosity > 3: print("clean ", dist)
-    dist = np.random.normal(dist, dist * percentage/100 * 0.28571428)
-    if verbosity > 3: print("noisy ", dist)
-    return dist
-
-def check_reverse(target, source, dist_df):
-    if ((dist_df['target'] == source) & (dist_df['source'] == target)).any():
-        return True
-    else:
-        return False
-
 def iterate_connections(cons):
     return cons + 1
 
@@ -159,7 +151,7 @@ def gen_dist_df(num_points, req_cons, noise_percent=0, error_percent=0, verbosit
     if enforce_cons: dist_df = enforce_connections(dist_df, num_points, req_cons, verbosity=verbosity)
     dist_df = dist_df.sort_values(['source', 'target'], ascending=[True, True])
     dist_df = dist_df.astype(int)
-    dist_df['dist'] = dist_df.apply(lambda row: distance(row.source, row.target, noise_percent, verbosity), axis=1)
+    dist_df['dist'] = dist_df.apply(lambda row: distance(encode_point(row.source), encode_point(row.target), noise_percent, verbosity), axis=1)
     dist_df['changed'] = False
     
     error_num = int(len(dist_df.index)*(error_percent/100))
@@ -232,48 +224,16 @@ def get_point_coords(noise_std_dev=0):
 
     return points_df
 
-def get_uniform_point_coords(init_cube_length=100):
-    points_df = pd.DataFrame(columns=['point_id','x_pos', 'y_pos','z_pos','x_tol','y_tol','z_tol'])
+def get_true_points_array(num_points=98):
+    for i in range(num_points):
+        true_point = encode_point(i+1)
+        if i == 0:
+            true_points = true_point
+        else:
+            true_points = np.hstack((true_points, true_point))
+    true_points = true_points.T
+    return true_points
     
-    for i in range(98):
-
-        x_pos = np.random.uniform(0, init_cube_length)
-        y_pos = np.random.uniform(0, init_cube_length)
-        z_pos = np.random.uniform(0, init_cube_length)
-        std_dev = math.sqrt(3*(init_cube_length*init_cube_length)) / 3.5 # check 3.5 -> 3
-        point_df = pd.DataFrame([[i+1,x_pos,y_pos,z_pos,std_dev,std_dev,std_dev]],columns=['point_id','x_pos', 'y_pos','z_pos','x_tol','y_tol','z_tol'])
-        points_df = points_df.append(point_df, ignore_index=True)
-
-    return points_df
-
-def enforce_connections(dist_df, num_points, req_cons, post_error=False, noise_percent=0, verbosity=0):
-
-    for i in range(98):
-        
-        condition_1 = dist_df.source == i+1
-        condition_2 = dist_df.target == i+1
-
-        point_cons = len(dist_df[condition_1 | condition_2].index)
-        if verbosity > 3: print("Point number ", i+1, " cons: ", point_cons)
-        for j in range(req_cons-point_cons):    
-            if point_cons < req_cons:
-                
-                if verbosity > 2: print("Point number ", i+1, "cons: ",point_cons+j, " < ", req_cons ," ,adding con") 
-
-                rand_target = randrange(1,num_points)
-                while(rand_target == i+1 or check_reverse(rand_target, i+1, dist_df) or check_reverse(i+1, rand_target, dist_df)):
-                    rand_target = randrange(1,num_points)
-                if verbosity > 2: print("New target: ", rand_target)
-                if not post_error:
-                    append_df = pd.DataFrame([[i+1, rand_target]], columns=['source', 'target'])
-                    dist_df = dist_df.append(append_df, ignore_index=True)
-                else:
-                    append_df = pd.DataFrame([[i+1, rand_target, distance(i+1, rand_target, verbosity), False]], columns=['source', 'target', 'dist', 'changed'])
-                    dist_df = dist_df.append(append_df, ignore_index=True)
-
-    return dist_df
-
-
 
 if(__name__ == '__main__'):
     #df = gen_dist_df(98, 5, verbosity=3, noise_percent=0, enforce_cons=True)

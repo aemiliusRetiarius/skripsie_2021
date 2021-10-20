@@ -1,1 +1,1 @@
-from .cube_gen import gen_dist_df, encode_point, get_point_coords, get_uniform_point_coords
+from .cube_gen import gen_dist_df, encode_point, get_point_coords, get_true_points_array

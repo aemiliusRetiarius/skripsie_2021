@@ -17,7 +17,12 @@ import sys
 sibling_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'cube_gen')
 sys.path.insert(0, sibling_path)
 
-from cube_gen import gen_dist_df, encode_point
+from cube_gen import gen_dist_df, get_true_points_array
+
+sibling_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'common_tools')
+sys.path.insert(0, sibling_path)
+
+from common_tools import get_rot_matrix
 
 import matlab.engine
 
@@ -127,13 +132,7 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
 
     if rotate == True or err_ord != None:
         #true array shape (98, 3)
-        for i in range(num_points):
-            true_point = encode_point(i+1)
-            if i == 0:
-                true_points = true_point
-            else:
-                true_points = np.hstack((true_points, true_point))
-        true_points = true_points.T
+        true_points = get_true_points_array(num_points)
 
     unrot_res = res
     if(rotate == True):
@@ -143,35 +142,11 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
 
         true_points_subset = np.vstack((true_points[0,:],true_points[4,:],true_points[20,:],true_points[29,:]))
         res_subset = np.vstack((res[0,:],res[4,:],res[20,:],res[29,:]))
-        #print(true_points_subset)
-        #print(res_subset)
         
-        cross = np.cross(res_subset[1,:],res_subset[3,:])
-        normed_cross = cross/np.linalg.norm(cross)
-        if verbosity > 1: print("Subset cross product norm:", normed_cross)
-        normed_z  = res_subset[2,:]/np.linalg.norm(res_subset[2,:])
-        if verbosity > 1: print("True cross product norm:", normed_z)
-        dot_product = np.dot(normed_cross, normed_z)
-        if verbosity > 1: print("Subset and true normal dot product:", dot_product)
-
-        if(dot_product < 0):
-            if verbosity > 0: print("Changing reconstruction from LH to RH...")
-            normed_cross = normed_cross[:,np.newaxis]
-            householder = np.identity(3) - 2 * np.dot(normed_cross, normed_cross.T)
-
-            if verbosity > 2: print("Householder matrix:", householder)
-            if verbosity > 1: print("Householder determinant:", np.linalg.det(householder))
-            res = np.dot(res, householder)
-            res_subset = np.dot(res_subset, householder)
-        
-        trans_rot = Rotation.align_vectors(true_points_subset,res_subset)
-        #trans_rot = Rotation.align_vectors(true_points,res)
-        trans = np.asarray(trans_rot)[0].as_matrix()
-        #trans = np.dot(np.linalg.pinv(res), true_points)
-        if verbosity > 2: print("Rotation matrix:", trans)
-        if verbosity > 1: print("Rotation matrix determinant:",np.linalg.det(trans))
-        
-        res = trans_rot[0].apply(res)
+        trans, householder_flag, householder = get_rot_matrix(res_subset, true_points_subset, verbosity)
+        if householder_flag : res = np.dot(res, householder)
+    
+        res = trans[0].apply(res)
         #res = np.dot(res, trans)
         if verbosity > 0: print("Reconstruction rotated")
         if verbosity > 0: print(">>>>>>>>>>>")
@@ -193,15 +168,21 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
 
     #only return error of specified order
     if(err_ord != None) and ((ret_points == None) or (ret_points == False)):
-        if(rotate == False):
-            warnings.warn('Rotation flag not set to true, returning unrotated error')
-        if err_ord == 'rel':
-            return ((np.linalg.norm(res-true_points)) / np.linalg.norm(true_points))
-        elif err_ord == 'edm_rel':
+        
+        if err_ord == 'edm_rel':
+
             true_edm = euclidean_distances(true_points)
             res_edm = euclidean_distances(unrot_res)
             return ((np.linalg.norm(true_edm-res_edm)) / np.linalg.norm(true_edm))
+        
+        elif err_ord == 'rel':
+            if(rotate == False):
+                warnings.warn('Rotation flag not set to true, returning unrotated error')
+            return ((np.linalg.norm(res-true_points)) / np.linalg.norm(true_points))
+        
         else:
+            if(rotate == False):
+                warnings.warn('Rotation flag not set to true, returning unrotated error')
             return np.linalg.norm((res-true_points), err_ord)
     
     #only return reconstructed points
@@ -210,15 +191,18 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
 
     #return both error of specified order and reconstructed points
     if(err_ord != None) and (ret_points == True):
-        if(rotate == False):
-            warnings.warn('Rotation flag not set to true, returning unrotated error')
-        if err_ord == 'rel':
-            return ((np.linalg.norm(res-true_points)) / np.linalg.norm(true_points)) , res
-        elif err_ord == 'edm_rel':
+        
+        if err_ord == 'edm_rel':
             true_edm = euclidean_distances(true_points)
             res_edm = euclidean_distances(unrot_res)
             return ((np.linalg.norm(true_edm-res_edm)) / np.linalg.norm(true_edm)), res
+        elif err_ord == 'rel':
+            if(rotate == False):
+                warnings.warn('Rotation flag not set to true, returning unrotated error')
+            return ((np.linalg.norm(res-true_points)) / np.linalg.norm(true_points)) , res
         else:
+            if(rotate == False):
+                warnings.warn('Rotation flag not set to true, returning unrotated error')
             return np.linalg.norm((res-true_points), err_ord), res
 
 if __name__ == '__main__':
