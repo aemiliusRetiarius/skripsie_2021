@@ -17,7 +17,7 @@ def check_reverse(target, source, dist_df):
     else:
         return False
 
-def enforce_connections(dist_df, num_points, req_cons, post_error=False, verbosity=0):
+def enforce_connections(dist_df, num_points, req_cons, post_error=False, noise_percent=0, verbosity=0):
 
     for i in range(num_points):
         
@@ -39,7 +39,7 @@ def enforce_connections(dist_df, num_points, req_cons, post_error=False, verbosi
                     append_df = pd.DataFrame([[i+1, rand_target]], columns=['source', 'target'])
                     dist_df = dist_df.append(append_df, ignore_index=True)
                 else:
-                    append_df = pd.DataFrame([[i+1, rand_target, distance(i+1, rand_target, verbosity), False]], columns=['source', 'target', 'dist', 'changed'])
+                    append_df = pd.DataFrame([[i+1, rand_target, distance(i+1, rand_target, noise_percent, verbosity), False]], columns=['source', 'target', 'dist', 'changed'])
                     dist_df = dist_df.append(append_df, ignore_index=True)
 
     return dist_df
