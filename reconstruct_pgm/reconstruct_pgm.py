@@ -33,7 +33,7 @@ dists_path = './Data/Ditch/distance_measurements.csv'
 results_path = "./Data/Ditch/result.csv"
 
 #pos_df = get_point_coords(1)
-pos_df = get_uniform_point_coords(46, 10)
+pos_df = get_uniform_point_coords(46, 8)
 
 #Ditch
 
@@ -46,6 +46,8 @@ pos_df.iloc[0,6] = 0
 
 pos_df.iloc[1,1] = 0
 pos_df.iloc[1,3] = 0
+pos_df.iloc[1,2] = 9.08269
+pos_df.iloc[1,4] = 0
 
 pos_df.iloc[2,3] = 0
 pos_df.iloc[2,6] = 0
@@ -105,7 +107,7 @@ dist_df = pd.read_csv(dists_path, index_col=0)
 dist_df = correct_df(dist_df, verbosity=2)
 dist_df.to_csv(dists_path)
 
-status = subprocess.run([program_path, "--p", priorPos_path, "--d", dists_path, "--r", results_path, "-l", "0.8", "-t", "20", "-i", "60", "-f","true"])
+status = subprocess.run([program_path, "--p", priorPos_path, "--d", dists_path, "--r", results_path, "-l", "0.8", "-t", "20", "-i", "20", "-f","true"])
 print("status code: ",status.returncode) # will return -6 if cov underflows
 
 res_df = pd.read_csv(results_path, index_col=0)

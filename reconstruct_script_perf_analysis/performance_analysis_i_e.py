@@ -42,7 +42,7 @@ target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "
 
 def get_err(index, intercon, error):
     dist_df = gen_dist_df(98, intercon, error_percent=error)
-    err = reconstruct(dist_df, err_ord='rel', parallel_num_str=str(index))
+    err = reconstruct(dist_df, err_ord='edm_rel', parallel_num_str=str(index))
     return err
 
 def get_avg_err(intercon, error):
@@ -85,11 +85,11 @@ scipy.io.savemat(target_path, dict(Z=Z))
 
 fig = plt.figure()
 ax = plt.axes(projection="3d")
-ax.plot_surface(X, Y, Z, cmap=cm.viridis)
+ax.plot_surface(X, Y, Z, cmap=cm.coolwarm)
 
 
 
-
+ax.set_ylim([0, 1.1])
 ax.set_xlabel('Interconnection')
 ax.set_ylabel('Record error %')
 ax.set_zlabel('Relative error')

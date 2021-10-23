@@ -1,0 +1,110 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.11"
+					},
+					"projectIndex" : 0,
+					"source" : "."
+				},
+				{
+					"build" : "src",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.11"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"name" : "",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "reconstruct_pgm",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "reconstruct_pgm::@145eef247bfb46b6828c",
+					"jsonFile" : "target-reconstruct_pgm-ea3839e453ae19826681.json",
+					"name" : "reconstruct_pgm",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "reconstruct_pgm0::@145eef247bfb46b6828c",
+					"jsonFile" : "target-reconstruct_pgm0-f6511c04e5e086d844fc.json",
+					"name" : "reconstruct_pgm0",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "reconstruct_pgm1::@145eef247bfb46b6828c",
+					"jsonFile" : "target-reconstruct_pgm1-f4ef7a893e4889bf3090.json",
+					"name" : "reconstruct_pgm1",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "reconstruct_pgm2::@145eef247bfb46b6828c",
+					"jsonFile" : "target-reconstruct_pgm2-829e061325cd910adeec.json",
+					"name" : "reconstruct_pgm2",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 1,
+					"id" : "reconstruct_pgm3::@145eef247bfb46b6828c",
+					"jsonFile" : "target-reconstruct_pgm3-b92d28340553d8e701c6.json",
+					"name" : "reconstruct_pgm3",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/emile/devel/skripsie_2021/reconstruct_pgm/build",
+		"source" : "/home/emile/devel/skripsie_2021/reconstruct_pgm"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 0
+	}
+}

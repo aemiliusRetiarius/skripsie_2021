@@ -27,8 +27,8 @@ import time
 ##Globals
 
 #intercon_axis = np.arange(5, 98, 2)
-intercon_start = 5
-intercon_end = 20 #98
+intercon_start = 1
+intercon_end = 98 #98
 intercon_step = 4
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
 
@@ -38,7 +38,7 @@ error_step = 4
 error_axis = np.arange(error_start, error_end, error_step)
 
 noise_start = 0
-noise_end = 5 #101
+noise_end = 101 #101
 noise_step = 4
 noise_axis = np.arange(noise_start, noise_end, noise_step)
 
@@ -47,7 +47,7 @@ target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "
 
 def get_err(index, intercon, error):
     dist_df = gen_dist_df(98, intercon, noise_percent=error)
-    err = reconstruct(dist_df, err_ord='rel', parallel_num_str=str(index))
+    err = reconstruct(dist_df, err_ord='edm_rel', parallel_num_str=str(index))
     return err
 
 def get_avg_err(intercon, error):
@@ -94,7 +94,7 @@ ax.plot_surface(X, Y, Z, cmap=cm.coolwarm)
 
 
 
-
+ax.set_ylim([0, 1.1])
 ax.set_xlabel('Interconnection')
 ax.set_ylabel('3.5 sigma noise %')
 ax.set_zlabel('Relative error')
