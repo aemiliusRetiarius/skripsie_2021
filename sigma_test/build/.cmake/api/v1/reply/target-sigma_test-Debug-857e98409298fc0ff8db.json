@@ -1,0 +1,203 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "src/sigma_test"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"include_directories"
+		],
+		"files" : 
+		[
+			"src/CMakeLists.txt",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 37,
+				"parent" : 0
+			},
+			{
+				"file" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 24,
+				"parent" : 2
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 28,
+				"parent" : 2
+			},
+			{
+				"command" : 1,
+				"file" : 1,
+				"line" : 34,
+				"parent" : 2
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "-std=c++17 -O3  -g   -Wall"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"path" : "/home/emile/devel/sigma_test/build/src"
+				},
+				{
+					"path" : "/home/emile/devel/sigma_test/src"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "/home/emile/devel"
+				},
+				{
+					"backtrace" : 4,
+					"path" : "/home/emile/devel/prlite/src"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/emdw-base"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/emdw-beliefprop"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/emdw-clustering"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/emdw-factors"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/emdw-graphing"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/test"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/utils-dependancyglue"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/utils-informationtheory"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/utils-matrix"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/utils-misc"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/utils-sigmapoints"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/utils-vector"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/vmp"
+				},
+				{
+					"backtrace" : 5,
+					"path" : "/home/emile/devel/emdw/src/wip"
+				}
+			],
+			"language" : "CXX",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"id" : "sigma_test::@145eef247bfb46b6828c",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "-std=c++17 -O3  -g",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "-Wl,-rpath,/home/emile/bin:/home/emile/devel/emdw/build/src:/home/emile/devel/prlite/build/src",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/home/emile/bin/libgLinear.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/home/emile/devel/emdw/build/src/libemdw.so",
+				"role" : "libraries"
+			},
+			{
+				"fragment" : "/home/emile/devel/prlite/build/src/libprlite.so",
+				"role" : "libraries"
+			}
+		],
+		"language" : "CXX"
+	},
+	"name" : "sigma_test",
+	"nameOnDisk" : "sigma_test",
+	"paths" : 
+	{
+		"build" : "src",
+		"source" : "src"
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/sigma_test.cc",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "EXECUTABLE"
+}
