@@ -53,7 +53,7 @@
 				{
 					"directoryIndex" : 1,
 					"id" : "sigma_test::@145eef247bfb46b6828c",
-					"jsonFile" : "target-sigma_test-Debug-857e98409298fc0ff8db.json",
+					"jsonFile" : "target-sigma_test-Debug-902077ca8ebcdd1cebad.json",
 					"name" : "sigma_test",
 					"projectIndex" : 0
 				}
@@ -63,8 +63,8 @@
 	"kind" : "codemodel",
 	"paths" : 
 	{
-		"build" : "/home/emile/devel/sigma_test/build",
-		"source" : "/home/emile/devel/sigma_test"
+		"build" : "/home/emile/devel/skripsie_2021/sigma_test/build",
+		"source" : "/home/emile/devel/skripsie_2021/sigma_test"
 	},
 	"version" : 
 	{

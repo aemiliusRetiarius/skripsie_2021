@@ -64,10 +64,10 @@
 			"includes" : 
 			[
 				{
-					"path" : "/home/emile/devel/sigma_test/build/src"
+					"path" : "/home/emile/devel/skripsie_2021/sigma_test/build/src"
 				},
 				{
-					"path" : "/home/emile/devel/sigma_test/src"
+					"path" : "/home/emile/devel/skripsie_2021/sigma_test/src"
 				},
 				{
 					"backtrace" : 3,
@@ -155,7 +155,7 @@
 				"role" : "flags"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/emile/bin:/home/emile/devel/emdw/build/src:/home/emile/devel/prlite/build/src",
+				"fragment" : "-Wl,-rpath,/home/emile/bin:/usr/local/lib",
 				"role" : "libraries"
 			},
 			{
@@ -163,11 +163,11 @@
 				"role" : "libraries"
 			},
 			{
-				"fragment" : "/home/emile/devel/emdw/build/src/libemdw.so",
+				"fragment" : "/usr/local/lib/libemdw.so",
 				"role" : "libraries"
 			},
 			{
-				"fragment" : "/home/emile/devel/prlite/build/src/libprlite.so",
+				"fragment" : "/usr/local/lib/libprlite.so",
 				"role" : "libraries"
 			}
 		],

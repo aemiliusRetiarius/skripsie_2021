@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/emile/devel/sigma_test/src/sigma_test.cc" "/home/emile/devel/sigma_test/build/src/CMakeFiles/sigma_test.dir/sigma_test.cc.o"
+  "/home/emile/devel/skripsie_2021/sigma_test/src/sigma_test.cc" "/home/emile/devel/skripsie_2021/sigma_test/build/src/CMakeFiles/sigma_test.dir/sigma_test.cc.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

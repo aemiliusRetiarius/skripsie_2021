@@ -83,7 +83,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/emile/devel/sigma_test/build"
+			"value" : "/home/emile/devel/skripsie_2021/sigma_test/build"
 		},
 		{
 			"name" : "CMAKE_CACHE_MAJOR_VERSION",
@@ -623,7 +623,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "/home/emile/devel/sigma_test"
+			"value" : "/home/emile/devel/skripsie_2021/sigma_test"
 		},
 		{
 			"name" : "CMAKE_INSTALL_PREFIX",
@@ -1179,7 +1179,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/home/emile/devel/emdw/build/src/libemdw.so"
+			"value" : "/usr/local/lib/libemdw.so"
 		},
 		{
 			"name" : "EMDW_SOURCE_DIR",
@@ -1203,7 +1203,7 @@
 				}
 			],
 			"type" : "PATH",
-			"value" : "/home/emile/devel/sigma_test/build/_deps"
+			"value" : "/home/emile/devel/skripsie_2021/sigma_test/build/_deps"
 		},
 		{
 			"name" : "FETCHCONTENT_FULLY_DISCONNECTED",
@@ -1263,7 +1263,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/home/emile/devel/emdw/build/src/libemdw.so][/home/emile/devel/emdw/src/emdw-base;/home/emile/devel/emdw/src/emdw-beliefprop;/home/emile/devel/emdw/src/emdw-clustering;/home/emile/devel/emdw/src/emdw-factors;/home/emile/devel/emdw/src/emdw-graphing;/home/emile/devel/emdw/src/test;/home/emile/devel/emdw/src/utils-dependancyglue;/home/emile/devel/emdw/src/utils-informationtheory;/home/emile/devel/emdw/src/utils-matrix;/home/emile/devel/emdw/src/utils-misc;/home/emile/devel/emdw/src/utils-sigmapoints;/home/emile/devel/emdw/src/utils-vector;/home/emile/devel/emdw/src/vmp;/home/emile/devel/emdw/src/wip][v()]"
+			"value" : "[/usr/local/lib/libemdw.so][/home/emile/devel/emdw/src/emdw-base;/home/emile/devel/emdw/src/emdw-beliefprop;/home/emile/devel/emdw/src/emdw-clustering;/home/emile/devel/emdw/src/emdw-factors;/home/emile/devel/emdw/src/emdw-graphing;/home/emile/devel/emdw/src/test;/home/emile/devel/emdw/src/utils-dependancyglue;/home/emile/devel/emdw/src/utils-informationtheory;/home/emile/devel/emdw/src/utils-matrix;/home/emile/devel/emdw/src/utils-misc;/home/emile/devel/emdw/src/utils-sigmapoints;/home/emile/devel/emdw/src/utils-vector;/home/emile/devel/emdw/src/vmp;/home/emile/devel/emdw/src/wip][v()]"
 		},
 		{
 			"name" : "FIND_PACKAGE_MESSAGE_DETAILS_gLinear",
@@ -1287,7 +1287,7 @@
 				}
 			],
 			"type" : "INTERNAL",
-			"value" : "[/home/emile/devel/prlite/build/src/libprlite.so][/home/emile/devel/prlite/src][v()]"
+			"value" : "[/usr/local/lib/libprlite.so][/home/emile/devel/prlite/src][v()]"
 		},
 		{
 			"name" : "GLINEAR_INCLUDE_DIR",
@@ -1363,7 +1363,7 @@
 				}
 			],
 			"type" : "FILEPATH",
-			"value" : "/home/emile/devel/prlite/build/src/libprlite.so"
+			"value" : "/usr/local/lib/libprlite.so"
 		},
 		{
 			"name" : "boost_headers_DIR",
@@ -1382,30 +1382,6 @@
 			"value" : "/usr/lib/x86_64-linux-gnu/cmake/boost_headers-1.71.0"
 		},
 		{
-			"name" : "my_emdw_app_BINARY_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "/home/emile/devel/sigma_test/build"
-		},
-		{
-			"name" : "my_emdw_app_SOURCE_DIR",
-			"properties" : 
-			[
-				{
-					"name" : "HELPSTRING",
-					"value" : "Value Computed by CMake"
-				}
-			],
-			"type" : "STATIC",
-			"value" : "/home/emile/devel/sigma_test"
-		},
-		{
 			"name" : "sigma_test_BINARY_DIR",
 			"properties" : 
 			[
@@ -1415,7 +1391,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/emile/devel/sigma_test/build"
+			"value" : "/home/emile/devel/skripsie_2021/sigma_test/build"
 		},
 		{
 			"name" : "sigma_test_SOURCE_DIR",
@@ -1427,7 +1403,7 @@
 				}
 			],
 			"type" : "STATIC",
-			"value" : "/home/emile/devel/sigma_test"
+			"value" : "/home/emile/devel/skripsie_2021/sigma_test"
 		}
 	],
 	"kind" : "cache",

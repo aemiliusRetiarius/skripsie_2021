@@ -48,10 +48,10 @@ RM = /usr/bin/cmake -E remove -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/emile/devel/sigma_test
+CMAKE_SOURCE_DIR = /home/emile/devel/skripsie_2021/sigma_test
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/emile/devel/sigma_test/build
+CMAKE_BINARY_DIR = /home/emile/devel/skripsie_2021/sigma_test/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -80,14 +80,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/emile/devel/sigma_test/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/emile/devel/sigma_test/build/CMakeFiles /home/emile/devel/sigma_test/build/src/CMakeFiles/progress.marks
-	cd /home/emile/devel/sigma_test/build && $(MAKE) -f CMakeFiles/Makefile2 src/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/emile/devel/sigma_test/build/CMakeFiles 0
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(CMAKE_COMMAND) -E cmake_progress_start /home/emile/devel/skripsie_2021/sigma_test/build/CMakeFiles /home/emile/devel/skripsie_2021/sigma_test/build/src/CMakeFiles/progress.marks
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(MAKE) -f CMakeFiles/Makefile2 src/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/emile/devel/skripsie_2021/sigma_test/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/emile/devel/sigma_test/build && $(MAKE) -f CMakeFiles/Makefile2 src/clean
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(MAKE) -f CMakeFiles/Makefile2 src/clean
 .PHONY : clean
 
 # The main clean target
@@ -97,22 +97,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/emile/devel/sigma_test/build && $(MAKE) -f CMakeFiles/Makefile2 src/preinstall
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(MAKE) -f CMakeFiles/Makefile2 src/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/emile/devel/sigma_test/build && $(MAKE) -f CMakeFiles/Makefile2 src/preinstall
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(MAKE) -f CMakeFiles/Makefile2 src/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/emile/devel/sigma_test/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 src/CMakeFiles/sigma_test.dir/rule:
-	cd /home/emile/devel/sigma_test/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/sigma_test.dir/rule
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/sigma_test.dir/rule
 .PHONY : src/CMakeFiles/sigma_test.dir/rule
 
 # Convenience name for target.
@@ -122,7 +122,7 @@ sigma_test: src/CMakeFiles/sigma_test.dir/rule
 
 # fast build rule for target.
 sigma_test/fast:
-	cd /home/emile/devel/sigma_test/build && $(MAKE) -f src/CMakeFiles/sigma_test.dir/build.make src/CMakeFiles/sigma_test.dir/build
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(MAKE) -f src/CMakeFiles/sigma_test.dir/build.make src/CMakeFiles/sigma_test.dir/build
 .PHONY : sigma_test/fast
 
 sigma_test.o: sigma_test.cc.o
@@ -131,7 +131,7 @@ sigma_test.o: sigma_test.cc.o
 
 # target to build an object file
 sigma_test.cc.o:
-	cd /home/emile/devel/sigma_test/build && $(MAKE) -f src/CMakeFiles/sigma_test.dir/build.make src/CMakeFiles/sigma_test.dir/sigma_test.cc.o
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(MAKE) -f src/CMakeFiles/sigma_test.dir/build.make src/CMakeFiles/sigma_test.dir/sigma_test.cc.o
 .PHONY : sigma_test.cc.o
 
 sigma_test.i: sigma_test.cc.i
@@ -140,7 +140,7 @@ sigma_test.i: sigma_test.cc.i
 
 # target to preprocess a source file
 sigma_test.cc.i:
-	cd /home/emile/devel/sigma_test/build && $(MAKE) -f src/CMakeFiles/sigma_test.dir/build.make src/CMakeFiles/sigma_test.dir/sigma_test.cc.i
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(MAKE) -f src/CMakeFiles/sigma_test.dir/build.make src/CMakeFiles/sigma_test.dir/sigma_test.cc.i
 .PHONY : sigma_test.cc.i
 
 sigma_test.s: sigma_test.cc.s
@@ -149,7 +149,7 @@ sigma_test.s: sigma_test.cc.s
 
 # target to generate assembly for a file
 sigma_test.cc.s:
-	cd /home/emile/devel/sigma_test/build && $(MAKE) -f src/CMakeFiles/sigma_test.dir/build.make src/CMakeFiles/sigma_test.dir/sigma_test.cc.s
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(MAKE) -f src/CMakeFiles/sigma_test.dir/build.make src/CMakeFiles/sigma_test.dir/sigma_test.cc.s
 .PHONY : sigma_test.cc.s
 
 # Help Target
@@ -175,6 +175,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/emile/devel/sigma_test/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/emile/devel/skripsie_2021/sigma_test/build && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

@@ -624,15 +624,15 @@ ostream
 zlib.h
 /home/emile/devel/prlite/src/zlib.h
 
-/home/emile/devel/sigma_test/src/sigma_test.cc
+/home/emile/devel/skripsie_2021/sigma_test/src/sigma_test.cc
 iostream
 -
 discretetable.hpp
-/home/emile/devel/sigma_test/src/discretetable.hpp
+/home/emile/devel/skripsie_2021/sigma_test/src/discretetable.hpp
 prlite_zfstream.hpp
-/home/emile/devel/sigma_test/src/prlite_zfstream.hpp
+/home/emile/devel/skripsie_2021/sigma_test/src/prlite_zfstream.hpp
 emdw.hpp
-/home/emile/devel/sigma_test/src/emdw.hpp
+/home/emile/devel/skripsie_2021/sigma_test/src/emdw.hpp
 sqrtmvg.hpp
-/home/emile/devel/sigma_test/src/sqrtmvg.hpp
+/home/emile/devel/skripsie_2021/sigma_test/src/sqrtmvg.hpp
 

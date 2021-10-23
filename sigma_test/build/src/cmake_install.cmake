@@ -1,4 +1,4 @@
-# Install script for directory: /home/emile/devel/sigma_test/src
+# Install script for directory: /home/emile/devel/skripsie_2021/sigma_test/src
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
