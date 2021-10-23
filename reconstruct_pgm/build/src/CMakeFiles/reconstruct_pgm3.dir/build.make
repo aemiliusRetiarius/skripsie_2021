@@ -80,7 +80,7 @@ reconstruct_pgm3_EXTERNAL_OBJECTS =
 src/reconstruct_pgm3: src/CMakeFiles/reconstruct_pgm3.dir/reconstruct_pgm.cc.o
 src/reconstruct_pgm3: src/CMakeFiles/reconstruct_pgm3.dir/build.make
 src/reconstruct_pgm3: /home/emile/bin/libgLinear.so
-src/reconstruct_pgm3: /home/emile/devel/emdw/build/src/libemdw.so
+src/reconstruct_pgm3: /usr/local/lib/libemdw.so
 src/reconstruct_pgm3: /home/emile/devel/prlite/build/src/libprlite.so
 src/reconstruct_pgm3: src/CMakeFiles/reconstruct_pgm3.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/emile/devel/skripsie_2021/reconstruct_pgm/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable reconstruct_pgm3"

@@ -1,0 +1,1 @@
+g++  -std=c++17 -O3  -g   CMakeFiles/my_emdw_app.dir/my_emdw_app.cc.o  -o my_emdw_app  -Wl,-rpath,/home/emile/bin:/home/emile/devel/emdw/build/src:/home/emile/devel/prlite/build/src /home/emile/bin/libgLinear.so /home/emile/devel/emdw/build/src/libemdw.so /home/emile/devel/prlite/build/src/libprlite.so 

@@ -1,0 +1,27 @@
+[
+{
+  "directory": "/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src",
+  "command": "g++   -I/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src -I/home/emile/devel/skripsie_2021/reconstruct_pgm/src -I/home/emile/devel -I/home/emile/devel/prlite/src -I/home/emile/devel/emdw/src/emdw-base -I/home/emile/devel/emdw/src/emdw-beliefprop -I/home/emile/devel/emdw/src/emdw-clustering -I/home/emile/devel/emdw/src/emdw-factors -I/home/emile/devel/emdw/src/emdw-graphing -I/home/emile/devel/emdw/src/test -I/home/emile/devel/emdw/src/utils-dependancyglue -I/home/emile/devel/emdw/src/utils-informationtheory -I/home/emile/devel/emdw/src/utils-matrix -I/home/emile/devel/emdw/src/utils-misc -I/home/emile/devel/emdw/src/utils-sigmapoints -I/home/emile/devel/emdw/src/utils-vector -I/home/emile/devel/emdw/src/vmp -I/home/emile/devel/emdw/src/wip  -std=c++17 -O3  -g   -Wall -o CMakeFiles/reconstruct_pgm3.dir/reconstruct_pgm.cc.o -c /home/emile/devel/skripsie_2021/reconstruct_pgm/src/reconstruct_pgm.cc",
+  "file": "/home/emile/devel/skripsie_2021/reconstruct_pgm/src/reconstruct_pgm.cc"
+},
+{
+  "directory": "/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src",
+  "command": "g++   -I/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src -I/home/emile/devel/skripsie_2021/reconstruct_pgm/src -I/home/emile/devel -I/home/emile/devel/prlite/src -I/home/emile/devel/emdw/src/emdw-base -I/home/emile/devel/emdw/src/emdw-beliefprop -I/home/emile/devel/emdw/src/emdw-clustering -I/home/emile/devel/emdw/src/emdw-factors -I/home/emile/devel/emdw/src/emdw-graphing -I/home/emile/devel/emdw/src/test -I/home/emile/devel/emdw/src/utils-dependancyglue -I/home/emile/devel/emdw/src/utils-informationtheory -I/home/emile/devel/emdw/src/utils-matrix -I/home/emile/devel/emdw/src/utils-misc -I/home/emile/devel/emdw/src/utils-sigmapoints -I/home/emile/devel/emdw/src/utils-vector -I/home/emile/devel/emdw/src/vmp -I/home/emile/devel/emdw/src/wip  -std=c++17 -O3  -g   -Wall -o CMakeFiles/reconstruct_pgm2.dir/reconstruct_pgm.cc.o -c /home/emile/devel/skripsie_2021/reconstruct_pgm/src/reconstruct_pgm.cc",
+  "file": "/home/emile/devel/skripsie_2021/reconstruct_pgm/src/reconstruct_pgm.cc"
+},
+{
+  "directory": "/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src",
+  "command": "g++   -I/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src -I/home/emile/devel/skripsie_2021/reconstruct_pgm/src -I/home/emile/devel -I/home/emile/devel/prlite/src -I/home/emile/devel/emdw/src/emdw-base -I/home/emile/devel/emdw/src/emdw-beliefprop -I/home/emile/devel/emdw/src/emdw-clustering -I/home/emile/devel/emdw/src/emdw-factors -I/home/emile/devel/emdw/src/emdw-graphing -I/home/emile/devel/emdw/src/test -I/home/emile/devel/emdw/src/utils-dependancyglue -I/home/emile/devel/emdw/src/utils-informationtheory -I/home/emile/devel/emdw/src/utils-matrix -I/home/emile/devel/emdw/src/utils-misc -I/home/emile/devel/emdw/src/utils-sigmapoints -I/home/emile/devel/emdw/src/utils-vector -I/home/emile/devel/emdw/src/vmp -I/home/emile/devel/emdw/src/wip  -std=c++17 -O3  -g   -Wall -o CMakeFiles/reconstruct_pgm1.dir/reconstruct_pgm.cc.o -c /home/emile/devel/skripsie_2021/reconstruct_pgm/src/reconstruct_pgm.cc",
+  "file": "/home/emile/devel/skripsie_2021/reconstruct_pgm/src/reconstruct_pgm.cc"
+},
+{
+  "directory": "/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src",
+  "command": "g++   -I/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src -I/home/emile/devel/skripsie_2021/reconstruct_pgm/src -I/home/emile/devel -I/home/emile/devel/prlite/src -I/home/emile/devel/emdw/src/emdw-base -I/home/emile/devel/emdw/src/emdw-beliefprop -I/home/emile/devel/emdw/src/emdw-clustering -I/home/emile/devel/emdw/src/emdw-factors -I/home/emile/devel/emdw/src/emdw-graphing -I/home/emile/devel/emdw/src/test -I/home/emile/devel/emdw/src/utils-dependancyglue -I/home/emile/devel/emdw/src/utils-informationtheory -I/home/emile/devel/emdw/src/utils-matrix -I/home/emile/devel/emdw/src/utils-misc -I/home/emile/devel/emdw/src/utils-sigmapoints -I/home/emile/devel/emdw/src/utils-vector -I/home/emile/devel/emdw/src/vmp -I/home/emile/devel/emdw/src/wip  -std=c++17 -O3  -g   -Wall -o CMakeFiles/reconstruct_pgm0.dir/reconstruct_pgm.cc.o -c /home/emile/devel/skripsie_2021/reconstruct_pgm/src/reconstruct_pgm.cc",
+  "file": "/home/emile/devel/skripsie_2021/reconstruct_pgm/src/reconstruct_pgm.cc"
+},
+{
+  "directory": "/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src",
+  "command": "g++   -I/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src -I/home/emile/devel/skripsie_2021/reconstruct_pgm/src -I/home/emile/devel -I/home/emile/devel/prlite/src -I/home/emile/devel/emdw/src/emdw-base -I/home/emile/devel/emdw/src/emdw-beliefprop -I/home/emile/devel/emdw/src/emdw-clustering -I/home/emile/devel/emdw/src/emdw-factors -I/home/emile/devel/emdw/src/emdw-graphing -I/home/emile/devel/emdw/src/test -I/home/emile/devel/emdw/src/utils-dependancyglue -I/home/emile/devel/emdw/src/utils-informationtheory -I/home/emile/devel/emdw/src/utils-matrix -I/home/emile/devel/emdw/src/utils-misc -I/home/emile/devel/emdw/src/utils-sigmapoints -I/home/emile/devel/emdw/src/utils-vector -I/home/emile/devel/emdw/src/vmp -I/home/emile/devel/emdw/src/wip  -std=c++17 -O3  -g   -Wall -o CMakeFiles/reconstruct_pgm.dir/reconstruct_pgm.cc.o -c /home/emile/devel/skripsie_2021/reconstruct_pgm/src/reconstruct_pgm.cc",
+  "file": "/home/emile/devel/skripsie_2021/reconstruct_pgm/src/reconstruct_pgm.cc"
+}
+]

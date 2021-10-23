@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "src/reconstruct_pgm1"
+			"path" : "src/reconstruct_pgm0"
 		}
 	],
 	"backtrace" : 1,
@@ -26,7 +26,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 43,
+				"line" : 40,
 				"parent" : 0
 			},
 			{
@@ -58,7 +58,7 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-std=c++17 -O3    -Wall"
+					"fragment" : "-std=c++17 -O3  -g   -Wall"
 				}
 			],
 			"includes" : 
@@ -141,13 +141,13 @@
 			]
 		}
 	],
-	"id" : "reconstruct_pgm1::@145eef247bfb46b6828c",
+	"id" : "reconstruct_pgm0::@145eef247bfb46b6828c",
 	"link" : 
 	{
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-std=c++17 -O3",
+				"fragment" : "-std=c++17 -O3  -g",
 				"role" : "flags"
 			},
 			{
@@ -155,7 +155,7 @@
 				"role" : "flags"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/emile/bin:/home/emile/devel/emdw/build/src:/home/emile/devel/prlite/build/src",
+				"fragment" : "-Wl,-rpath,/home/emile/bin:/usr/local/lib:/home/emile/devel/prlite/build/src",
 				"role" : "libraries"
 			},
 			{
@@ -163,7 +163,7 @@
 				"role" : "libraries"
 			},
 			{
-				"fragment" : "/home/emile/devel/emdw/build/src/libemdw.so",
+				"fragment" : "/usr/local/lib/libemdw.so",
 				"role" : "libraries"
 			},
 			{
@@ -173,8 +173,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "reconstruct_pgm1",
-	"nameOnDisk" : "reconstruct_pgm1",
+	"name" : "reconstruct_pgm0",
+	"nameOnDisk" : "reconstruct_pgm0",
 	"paths" : 
 	{
 		"build" : "src",

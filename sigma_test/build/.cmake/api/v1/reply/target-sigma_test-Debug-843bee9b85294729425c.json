@@ -2,7 +2,7 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "src/reconstruct_pgm2"
+			"path" : "src/sigma_test"
 		}
 	],
 	"backtrace" : 1,
@@ -26,7 +26,7 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 46,
+				"line" : 37,
 				"parent" : 0
 			},
 			{
@@ -58,16 +58,16 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "-std=c++17 -O3    -Wall"
+					"fragment" : "-std=c++17 -O3  -g   -Wall"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"path" : "/home/emile/devel/skripsie_2021/reconstruct_pgm/build/src"
+					"path" : "/home/emile/devel/skripsie_2021/sigma_test/build/src"
 				},
 				{
-					"path" : "/home/emile/devel/skripsie_2021/reconstruct_pgm/src"
+					"path" : "/home/emile/devel/skripsie_2021/sigma_test/src"
 				},
 				{
 					"backtrace" : 3,
@@ -141,13 +141,13 @@
 			]
 		}
 	],
-	"id" : "reconstruct_pgm2::@145eef247bfb46b6828c",
+	"id" : "sigma_test::@145eef247bfb46b6828c",
 	"link" : 
 	{
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "-std=c++17 -O3",
+				"fragment" : "-std=c++17 -O3  -g",
 				"role" : "flags"
 			},
 			{
@@ -155,7 +155,7 @@
 				"role" : "flags"
 			},
 			{
-				"fragment" : "-Wl,-rpath,/home/emile/bin:/home/emile/devel/emdw/build/src:/home/emile/devel/prlite/build/src",
+				"fragment" : "-Wl,-rpath,/home/emile/bin:/usr/local/lib:/home/emile/devel/prlite/build/src",
 				"role" : "libraries"
 			},
 			{
@@ -163,7 +163,7 @@
 				"role" : "libraries"
 			},
 			{
-				"fragment" : "/home/emile/devel/emdw/build/src/libemdw.so",
+				"fragment" : "/usr/local/lib/libemdw.so",
 				"role" : "libraries"
 			},
 			{
@@ -173,8 +173,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "reconstruct_pgm2",
-	"nameOnDisk" : "reconstruct_pgm2",
+	"name" : "sigma_test",
+	"nameOnDisk" : "sigma_test",
 	"paths" : 
 	{
 		"build" : "src",
@@ -195,7 +195,7 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "src/reconstruct_pgm.cc",
+			"path" : "src/sigma_test.cc",
 			"sourceGroupIndex" : 0
 		}
 	],
