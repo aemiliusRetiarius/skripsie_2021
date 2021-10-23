@@ -498,7 +498,7 @@ void reconstructFromSigmaPoints(gaussian_pgm &gpgm)
                     SqrtMVG::constructFromSigmaPoints(
                         cluster.second->getVars(), sigmaPoints,
                         {gpgm.distRVsMap[{p1,p2}]},
-                        sigmaDists, distNoise) );
+                        sigmaDists, distNoise,false, true, true) );
         // and observe the distance value
         factors.push_back( mvgFactor->Factor::observeAndReduce(gpgm.obsVars, gpgm.obsVals)->normalize() );
 
