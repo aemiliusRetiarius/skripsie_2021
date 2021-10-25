@@ -31,12 +31,12 @@ int main(int, char *argv[]) {
   prlite::RowMatrix<double> cv1D(1,1);
 
   mn1D[0] = 0;
-  cv1D(0,0) = 0.01;
+  cv1D(0,0) = 4;
 
   scalarFactors.push_back( uniqptr<SqrtMVG> ( new SqrtMVG({x1}, mn1D, cv1D) ) );
 
   mn1D[0] = 10;
-  cv1D(0,0) = 0.01;
+  cv1D(0,0) = 4;
 
   scalarFactors.push_back( uniqptr<SqrtMVG> ( new SqrtMVG({x2}, mn1D, cv1D) ) );
 
@@ -82,6 +82,43 @@ int main(int, char *argv[]) {
   cout << mvgQuery->getMean() << endl;
   cout << mvgQuery->getCov() << endl;
   
+  cout << "----------x-1D test-x----------" << endl;
+
+  mn1D[0] = 0;
+  cv1D(0,0) = 5;
+  distNoise(0,0) = 1;
+
+  scalarFactors.clear();
+  scalarFactors.push_back( uniqptr<SqrtMVG> ( new SqrtMVG({x1}, mn1D, cv1D) ) );
+
+  priorFactor = absorb(scalarFactors)->normalize();
+  mvgFactor = std::dynamic_pointer_cast<SqrtMVG>(priorFactor);
+  sigmaPoints = mvgFactor->getSigmaPoints();  
+  sigmaDists.resize(1, sigmaPoints.cols());
+
+  cols = (unsigned)sigmaPoints.cols();
+  for(unsigned col = 0; col < cols; col++)
+  {
+    sigmaDists(0, col) = sigmaPoints(0, col)-4;
+  }
+
+  mvgFactor = uniqptr<SqrtMVG>(
+      SqrtMVG::constructFromSigmaPoints(
+      {x1}, sigmaPoints,
+      {d},
+      sigmaDists, distNoise) );
+
+  cout << "2d gaussian reconstructed" << endl;
+  cout << mvgFactor->getMean() << endl;
+  cout << mvgFactor->getCov() << endl;
+
+  cout << "observing" << endl;
+  newFactor = mvgFactor->Factor::observeAndReduce({d}, {0.0})->normalize();
+  mvgQueryJoint = std::dynamic_pointer_cast<SqrtMVG>(newFactor);
+
+  cout << mvgQueryJoint->getMean() << endl;
+  cout << mvgQueryJoint->getCov() << endl; 
+
   cout << "success" << endl;
 
 } // main
