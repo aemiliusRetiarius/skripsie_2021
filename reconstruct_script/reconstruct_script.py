@@ -1,8 +1,6 @@
 #TODO: check if casting sys.argv is redundant
 #TODO: Add parameter for passing existing matlab engine connection
-#TODO: rerun performance analysis with rel error
-#TODO: change rotation matrix to use subset of points? force some values to zero for affine transformation?
-#      rot matrix has det != 1
+#TODO: Check if numpoints < 30, warn that rotation must be false
 
 import numpy as np
 import pandas as pd
