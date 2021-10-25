@@ -27,7 +27,7 @@ intercon_end = 26
 intercon_step = 1
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
 
-initStd_start =  1#0
+initStd_start =  1#1
 initStd_end = 202 #101
 initStd_step = 10
 initStd_axis = np.arange(initStd_start, initStd_end, initStd_step)

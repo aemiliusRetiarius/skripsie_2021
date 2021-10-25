@@ -94,7 +94,7 @@ ax.plot_surface(X, Y, Z, cmap=cm.coolwarm)
 
 
 
-ax.set_ylim([0, 1.1])
+ax.set_zlim([0, 1.1])
 ax.set_xlabel('Interconnection')
 ax.set_ylabel('3.5 sigma noise %')
 ax.set_zlabel('Relative error')
