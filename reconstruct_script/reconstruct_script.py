@@ -153,7 +153,7 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
         fig = plt.figure()
         ax = plt.axes(projection="3d")
     if projection == 'scatter':
-        ax.scatter3D(res[:, 0], res[:, 1], res[:, 2], c=res[:, 2], cmap='hsv')
+        ax.scatter3D(res[:, 0], res[:, 1], res[:, 2], c=res[:, 2], cmap='viridis')
         plt.show()
     if projection == 'trisurf':
         ax.plot_trisurf(res[:, 0], res[:, 1], res[:, 2], cmap=cm.jet, linewidth=0, antialiased=False)
