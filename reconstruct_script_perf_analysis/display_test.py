@@ -20,7 +20,7 @@ error_axis = np.arange(error_start, error_end, error_step)
 
 X, Y = np.meshgrid(intercon_axis, error_axis)
 
-target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_err_0_101_4_edm_rel_1")
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_noi_0_101_4_edm_rel_1")
 
 Z = scipy.io.loadmat(target_path)
 Z1 = Z['Z']

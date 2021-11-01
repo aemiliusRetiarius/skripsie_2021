@@ -5,6 +5,8 @@
 import numpy as np
 import pandas as pd
 import math
+import matplotlib.pyplot as plt
+import alphashape as alsh
 from random import uniform, randrange
 
 import os, sys
@@ -245,4 +247,23 @@ if(__name__ == '__main__'):
     #get_point_coords(noise_std_dev=50).to_csv('init_pos_std_50.csv')
     #df.to_csv('dists_TEST.csv')
     #print(df)
+    res = get_true_points_array()
+    fig = plt.figure()
+    ax = plt.axes(projection="3d")
+    point_nums = np.arange(1, 99)
+    #p = ax.scatter3D(res[:, 0], res[:, 1], res[:, 2], c=point_nums, cmap='viridis')
+    
+    res_list = list(map(tuple, res))
+    alpha_shape = alsh.alphashape(res_list, 0.01)
+    ax.plot_trisurf(*zip(*alpha_shape.vertices), triangles=alpha_shape.faces, cmap='viridis')
+    
+    ax.set_xlim([-10, 110])
+    ax.set_ylim([-10, 110])
+    ax.set_zlim([-10, 110])
+    ax.set_xlabel('x')
+    ax.set_ylabel('y')
+    ax.set_zlabel('z')
+    #fig.colorbar(p, label='Point Number')
+    ax.view_init(elev=20, azim=-80)
+    plt.show()
     pass

@@ -16,15 +16,22 @@ import time
 sibling_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'cube_gen')
 sys.path.insert(0, sibling_path)
 
-from cube_gen import get_point_coords, gen_dist_df
+from cube_gen import get_point_coords, gen_dist_df, get_true_points_array
+
+sibling_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'common_tools')
+sys.path.insert(0, sibling_path)
+
+from common_tools import get_rot_matrix
+
+from sklearn.metrics import euclidean_distances
 
 ###############
 ##Globals
 
 #intercon_axis = np.arange(5, 98, 2)
 intercon_start = 1
-intercon_end = 26
-intercon_step = 1
+intercon_end = 98
+intercon_step = 4
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
 
 initStd_start =  1#1
@@ -32,7 +39,7 @@ initStd_end = 202 #101
 initStd_step = 10
 initStd_axis = np.arange(initStd_start, initStd_end, initStd_step)
 
-target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_26_init_std_1_202_1%n_5%e_rel_1.mat")
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_init_std_1_202_10_1%n_0%e_edm_rel_1.mat")
 
 program_path = './reconstruct_pgm/build/src/reconstruct_pgm'
 
@@ -94,17 +101,30 @@ def get_err(index):
         res[i,1] = res_df["y_pos"][i]
         res[i,2] = res_df["z_pos"][i]
 
-    true_points_full = get_point_coords().to_numpy()
-    true_points = true_points_full[:,1:4]
+    #true_points_full = get_point_coords().to_numpy()
+    #true_points = true_points_full[:,1:4]
+    true_points = get_true_points_array(98)
+    #trans = np.zeros((3,3))
+    #trans = np.dot(np.linalg.pinv(res), true_points)
+    #res = res - res[0, :]
+    #res = np.dot(res, trans)
 
-    trans = np.zeros((3,3))
-    trans = np.dot(np.linalg.pinv(res), true_points)
-    res = res - res[0, :]
-    res = np.dot(res, trans)
+    res = res - res[0,:]
 
-    dif = res - true_points
-    err = (np.linalg.norm(dif)) / np.linalg.norm(true_points)
+    true_points_subset = np.vstack((true_points[0,:],true_points[4,:],true_points[20,:],true_points[29,:]))
+    res_subset = np.vstack((res[0,:],res[4,:],res[20,:],res[29,:]))
+
+    trans, householder_flag, householder = get_rot_matrix(res_subset, true_points_subset)
+    if householder_flag : res = np.dot(res, householder)
     
+    res = trans[0].apply(res)
+
+    true_edm = euclidean_distances(true_points)
+    res_edm = euclidean_distances(res)
+
+    dif = res_edm - true_edm
+    err = (np.linalg.norm(dif)) / np.linalg.norm(true_edm)
+
     return err
 
 def create_csv_files(index, intercon, std_dev):
@@ -114,7 +134,7 @@ def create_csv_files(index, intercon, std_dev):
     pos_df = observe_positions(pos_df)
     pos_df.to_csv(priorPos_path+str(index)+'.csv')
 
-    dist_df = gen_dist_df(98, intercon, enforce_cons=True, noise_percent=1, error_percent=5)
+    dist_df = gen_dist_df(98, intercon, enforce_cons=True, noise_percent=1, error_percent=0)
     dist_df.to_csv(dists_path+str(index)+'.csv')
     return
 
