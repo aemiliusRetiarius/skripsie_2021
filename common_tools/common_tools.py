@@ -110,14 +110,16 @@ def get_rot_matrix(res_subset, true_subset, verbosity=0):
     if verbosity > 1: print("True cross product norm:", true_normed_cross)
     
     res_dot_product = np.dot(normed_cross, res_subset[3,:])
-    if verbosity > 1: print("Res subset and res normal dot product:", res_dot_product)
+    res_normed_dot_product = res_dot_product/np.linalg.norm(res_dot_product)
+    if verbosity > 1: print("Res subset and res normal dot product:", res_normed_dot_product)
 
     true_dot_product = np.dot(true_normed_cross, true_subset[3,:])
-    if verbosity > 1: print("True subset and true normal dot product:", true_dot_product)
+    true_normed_dot_product = true_dot_product/np.linalg.norm(true_dot_product)
+    if verbosity > 1: print("True subset and true normal dot product:", true_normed_dot_product)
 
     householder_flag = False
     householder = None
-    if(np.sign(res_dot_product) != np.sign(true_dot_product)):
+    if(np.sign(res_normed_dot_product) != np.sign(true_normed_dot_product)):
         if verbosity > 0: print("Changing reconstruction from LH to RH...")
         normed_cross = normed_cross[:,np.newaxis]
         householder = np.identity(3) - 2 * np.dot(normed_cross, normed_cross.T)
