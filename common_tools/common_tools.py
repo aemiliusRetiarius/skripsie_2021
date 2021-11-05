@@ -101,19 +101,23 @@ def get_uniform_point_coords(num_points=98, init_cube_length=100):
 
 def get_rot_matrix(res_subset, true_subset, verbosity=0):
     
-    cross = np.cross(res_subset[1,:],res_subset[3,:])
+    cross = np.cross(res_subset[1,:],res_subset[2,:])
     normed_cross = cross/np.linalg.norm(cross)
     if verbosity > 1: print("Subset cross product norm:", normed_cross)
     
-    normed_z  = res_subset[2,:]/np.linalg.norm(res_subset[2,:])
-    if verbosity > 1: print("True cross product norm:", normed_z)
+    true_cross = np.cross(true_subset[1,:],true_subset[2,:])
+    true_normed_cross  = true_cross/np.linalg.norm(true_cross)
+    if verbosity > 1: print("True cross product norm:", true_normed_cross)
     
-    dot_product = np.dot(normed_cross, normed_z)
-    if verbosity > 1: print("Subset and true normal dot product:", dot_product)
+    res_dot_product = np.dot(normed_cross, res_subset[3,:])
+    if verbosity > 1: print("Res subset and res normal dot product:", res_dot_product)
+
+    true_dot_product = np.dot(true_normed_cross, true_subset[3,:])
+    if verbosity > 1: print("True subset and true normal dot product:", true_dot_product)
 
     householder_flag = False
     householder = None
-    if(dot_product < 0):
+    if(np.sign(res_dot_product) != np.sign(true_dot_product)):
         if verbosity > 0: print("Changing reconstruction from LH to RH...")
         normed_cross = normed_cross[:,np.newaxis]
         householder = np.identity(3) - 2 * np.dot(normed_cross, normed_cross.T)
