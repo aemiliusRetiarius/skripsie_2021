@@ -20,27 +20,26 @@ error_axis = np.arange(error_start, error_end, error_step)
 
 X, Y = np.meshgrid(intercon_axis, error_axis)
 
-target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_noi_0_101_4_edm_rel_1")
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_err_0_101_4_edm_rel_1")
 
 Z = scipy.io.loadmat(target_path)
 Z1 = Z['Z']
-
-#target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_err_0_101_4_rel_2")
-
-#Z = scipy.io.loadmat(target_path)
-#Z2 = Z['Z']
-
-#target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_err_0_101_4_rel_3")
-
-#Z = scipy.io.loadmat(target_path)
-#Z3 = Z['Z']
-
-#target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_err_0_101_4_rel_4")
-
-#Z = scipy.io.loadmat(target_path)
-#Z4 = Z['Z']
 Z = Z1
-#Z = (Z1 + Z2 + Z3 + Z4)/4
+
+fig = plt.figure()
+ax = plt.axes()
+
+for i in range(20):
+    
+    zs = Z[i, :]
+    if(i % 2 == 0):
+        plt.plot(intercon_axis, zs, color="royalblue", alpha=(1-0.05*i), linewidth=0.75)
+
+ax.set_ylim([0, 1.1])
+ax.set_xlabel('Interconnection')
+ax.set_ylabel('Record Error %')
+plt.grid()
+plt.savefig('./reconstruct_script_perf_analysis/Figures/inter_err_line.png', bbox_inches='tight')
 
 Z[Z>(1.1)] = 1.1
 print(Z) 
@@ -51,24 +50,45 @@ ax.plot_surface(X, Y, Z, cmap=cm.coolwarm)
 
 ax.set_zlim([0, 1.1])
 ax.set_xlabel('Interconnection')
-ax.set_ylabel('Record error %')
-ax.set_zlabel('Relative error')
+ax.set_ylabel('Record Error %')
+ax.set_zlabel('Relative EDM Error')
 
-plt.show()
+plt.savefig('./reconstruct_script_perf_analysis/Figures/inter_err_surf.png', bbox_inches='tight')
 
-#target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_noi_0_101_4_rel_1")
 
-#Z = scipy.io.loadmat(target_path)
-#Z1 = Z['Z']
+########################################
 
-#Z = (Z1)/1
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_noi_0_101_4_edm_rel_1")
 
-#fig = plt.figure()
-#ax = plt.axes(projection="3d")
-#ax.plot_surface(X, Y, Z, cmap=cm.coolwarm)
+Z = scipy.io.loadmat(target_path)
+Z1 = Z['Z']
+Z = Z1
 
-#ax.set_xlabel('Interconnection')
-#ax.set_ylabel('3.5 sigma noise %')
-#ax.set_zlabel('Relative error')
+fig = plt.figure()
+ax = plt.axes()
 
-#plt.show()
+for i in range(20):
+    
+    zs = Z[i, :]
+    if(i % 2 == 0):
+        plt.plot(intercon_axis, zs, color="royalblue", alpha=(1-0.05*i), linewidth=0.75)
+
+ax.set_ylim([0, 1.1])
+ax.set_xlabel('Interconnection')
+ax.set_ylabel('Noise %')
+plt.grid()
+plt.savefig('./reconstruct_script_perf_analysis/Figures/inter_noi_line.png', bbox_inches='tight')
+
+Z[Z>(1.1)] = 1.1
+print(Z) 
+
+fig = plt.figure()
+ax = plt.axes(projection="3d")
+ax.plot_surface(X, Y, Z, cmap=cm.coolwarm)
+
+ax.set_zlim([0, 1.1])
+ax.set_xlabel('Interconnection')
+ax.set_ylabel('Noise %')
+ax.set_zlabel('Relative EDM Error')
+
+plt.savefig('./reconstruct_script_perf_analysis/Figures/inter_noi_surf.png', bbox_inches='tight')
