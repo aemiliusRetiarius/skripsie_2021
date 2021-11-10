@@ -22,9 +22,6 @@ sys.path.insert(0, sibling_path)
 
 from common_tools import get_uniform_point_coords
 
-def get_normalized_error(old_dist, new_dist):
-    return abs(new_dist - old_dist) / old_dist
-
 def reconstruct(dist_df, init_std=None, init_rand=None, projection=None, err_ord=None, ret_points=None, pgm_lambda=0.8, pgm_max_iter=20, pgm_tol=294, verbosity=0):
     
     program_path = './reconstruct_pgm/build/src/reconstruct_pgm'
