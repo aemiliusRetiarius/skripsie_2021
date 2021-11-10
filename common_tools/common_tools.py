@@ -137,3 +137,20 @@ def get_rot_matrix(res_subset, true_subset, verbosity=0):
     #    trans = np.dot(householder, trans)
 
     return trans_rot, householder_flag, householder
+
+def get_normalized_error(old_dist, new_dist):
+    return abs(new_dist - old_dist) / old_dist
+
+def heuristic_iden_reduction(dist_df, res_points, err_to_rem=0):
+    
+    dist_df['new_dist'] = dist_df.apply(lambda row: (np.linalg.norm(res_points[(int(row['source']) -1), :] - res_points[(int(row['target'])) -1, :])), axis=1)
+    dist_df['normalized_error'] = dist_df.apply(lambda row: get_normalized_error(row['dist'], row['new_dist']), axis=1)
+    dist_df.sort_values(by='normalized_error', ascending=False, inplace=True)
+    dist_df.reset_index(inplace=True, drop=True)
+
+    less_dist_df = dist_df.copy()
+    less_dist_df = less_dist_df[dist_df.index >= len(dist_df.index)*err_to_rem]
+    less_dist_df.drop(columns=['new_dist', 'normalized_error'], inplace=True)
+    less_dist_df.reset_index(inplace=True, drop=True)
+
+    return less_dist_df
