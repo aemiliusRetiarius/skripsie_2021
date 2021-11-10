@@ -37,7 +37,7 @@ for i in range(20):
 
 ax.set_ylim([0, 1.1])
 ax.set_xlabel('Interconnection')
-ax.set_ylabel('Record Error %')
+ax.set_ylabel('Relative EDM Error')
 plt.grid()
 plt.savefig('./reconstruct_script_perf_analysis/Figures/inter_err_line.png', bbox_inches='tight')
 
@@ -75,7 +75,7 @@ for i in range(20):
 
 ax.set_ylim([0, 1.1])
 ax.set_xlabel('Interconnection')
-ax.set_ylabel('Noise %')
+ax.set_ylabel('Relative EDM Error')
 plt.grid()
 plt.savefig('./reconstruct_script_perf_analysis/Figures/inter_noi_line.png', bbox_inches='tight')
 
