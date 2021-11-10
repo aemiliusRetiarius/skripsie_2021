@@ -30,7 +30,7 @@ from sklearn.metrics import euclidean_distances
 
 #intercon_axis = np.arange(5, 98, 2)
 intercon_start = 1
-intercon_end = 98
+intercon_end = 62
 intercon_step = 4
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
 
@@ -39,7 +39,7 @@ initStd_end = 202 #101
 initStd_step = 10
 initStd_axis = np.arange(initStd_start, initStd_end, initStd_step)
 
-target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_init_std_1_202_10_1%n_0%e_edm_rel_1.mat")
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_std_1_202_10_0%n_0%e_edm_rel_1.mat")
 
 program_path = './reconstruct_pgm/build/src/reconstruct_pgm'
 
