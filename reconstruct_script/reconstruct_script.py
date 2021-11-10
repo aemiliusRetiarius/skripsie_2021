@@ -93,10 +93,10 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
     target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "edm_raw" + parallel_num_str + ".mat")
     scipy.io.savemat(target_path, dict(dist_mat=dist_mat, mask_mat=mask_mat))
     if verbosity > 0: print(target_path)
-    if verbosity > 0: print('Incomplete EDM Matrices saved')
+    if verbosity > 0: print('Incomplete EDM matrices saved')
     
     if verbosity > 0: print(">>>>>>>>>>>")
-    if verbosity > 0: print('Connecting to Matlab...')
+    if verbosity > 0: print('Connecting to MATLAB...')
     if matlab_engine == None:
         eng = matlab.engine.start_matlab()
         eng.addpath(os.path.dirname(os.path.abspath(__file__)), nargout= 0 )
@@ -105,14 +105,14 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
     else:
         eng = matlab_engine
 
-    if verbosity > 0: print('Script Starting')
+    if verbosity > 0: print('Script starting')
     if verbosity < 2:
         out = io.StringIO()
         err = io.StringIO()
         execute_matlab_quiet(eng, parallel_num_str, out, err)
     else:
         execute_matlab(eng, parallel_num_str)
-    if verbosity > 0: print('Script Complete')
+    if verbosity > 0: print('Script complete')
 
     if verbosity > 0: print(">>>>>>>>>>>")
     target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "recon_edm" + parallel_num_str + ".mat")
@@ -125,7 +125,7 @@ def reconstruct(dist_df, projection=None, rotate=True, err_ord=None,  ret_points
     if verbosity > 0: mds_verbosity = verbosity - 1
     embedding = MDS(n_components=3, verbose=mds_verbosity, dissimilarity='precomputed', max_iter=3000, eps=1e-12)
     res = embedding.fit_transform(edm['ans'])
-    if verbosity > 0: print("Points Reconstructed")
+    if verbosity > 0: print("Points reconstructed")
     if verbosity > 0: print(">>>>>>>>>>>")
 
     if rotate == True or err_ord != None:
