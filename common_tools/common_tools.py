@@ -148,9 +148,10 @@ def heuristic_iden_reduction(dist_df, res_points, err_to_rem=0):
     dist_df.sort_values(by='normalized_error', ascending=False, inplace=True)
     dist_df.reset_index(inplace=True, drop=True)
 
-    less_dist_df = dist_df.copy()
-    less_dist_df = less_dist_df[dist_df.index >= len(dist_df.index)*err_to_rem]
+    less_dist_df = dist_df.copy(deep=True)
+    less_dist_df = less_dist_df[less_dist_df.index >= len(dist_df.index)*err_to_rem]
     less_dist_df.drop(columns=['new_dist', 'normalized_error'], inplace=True)
+    dist_df = dist_df.sort_values(['source', 'target'], ascending=[True, True])
     less_dist_df.reset_index(inplace=True, drop=True)
 
     return less_dist_df
