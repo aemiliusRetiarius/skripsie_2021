@@ -7,6 +7,7 @@ import sys
 import scipy.io
 import matplotlib.pyplot as plt
 from matplotlib import cm
+import matplotlib.colors
 
 intercon_start = 1
 intercon_end = 98
@@ -20,6 +21,10 @@ error_axis = np.arange(error_start, error_end, error_step)
 
 X, Y = np.meshgrid(intercon_axis, error_axis)
 
+colors = plt.cm.jet(np.linspace(0,0.5,20))
+cmap= matplotlib.colors.ListedColormap(colors)
+norm= matplotlib.colors.Normalize(vmin=0,vmax=100)
+
 target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_98_4_err_0_101_4_edm_rel_1")
 
 Z = scipy.io.loadmat(target_path)
@@ -32,12 +37,15 @@ ax = plt.axes()
 for i in range(20):
     
     zs = Z[i, :]
-    if(i % 2 == 0):
-        plt.plot(intercon_axis, zs, color="royalblue", alpha=(1-0.05*i), linewidth=0.75)
+    if(i % 1 == 0):
+        plt.plot(intercon_axis, zs, color=colors[i], linewidth=0.75)
 
 ax.set_ylim([0, 1.1])
+ax.set_xlim([0, 62])
 ax.set_xlabel('Interconnection')
 ax.set_ylabel('Relative EDM Error')
+fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
+              label='Record Error %')
 plt.grid()
 plt.savefig('./reconstruct_script_perf_analysis/Figures/inter_err_line.png', bbox_inches='tight')
 
@@ -70,12 +78,15 @@ ax = plt.axes()
 for i in range(20):
     
     zs = Z[i, :]
-    if(i % 2 == 0):
-        plt.plot(intercon_axis, zs, color="royalblue", alpha=(1-0.05*i), linewidth=0.75)
+    if(i % 1 == 0):
+        plt.plot(intercon_axis, zs, color=colors[i], linewidth=0.75)
 
 ax.set_ylim([0, 1.1])
+ax.set_xlim([0, 62])
 ax.set_xlabel('Interconnection')
 ax.set_ylabel('Relative EDM Error')
+fig.colorbar(cm.ScalarMappable(norm=norm, cmap=cmap),
+              label='Measurement Noise %')
 plt.grid()
 plt.savefig('./reconstruct_script_perf_analysis/Figures/inter_noi_line.png', bbox_inches='tight')
 
