@@ -35,8 +35,14 @@ plt.plot(intercon_axis, Z, color="orange", label="Det. Algo.")
 target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_rand_100_1%n_0%e_edm_rel_1")
 
 Z = scipy.io.loadmat(target_path)
-Z = Z['Z']
-Z = Z.T
+Z1 = Z['Z']
+
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_rand_100_1%n_0%e_edm_rel_2")
+
+Z = scipy.io.loadmat(target_path)
+Z2 = Z['Z']
+
+Z = (Z1.T + Z2.T)/2
 
 plt.plot(intercon_axis, Z, color="red", label="Prob. Algo. Random Init.")
 
@@ -77,33 +83,65 @@ plt.plot(intercon_axis, Z, color="orange", label="Det. Algo.")
 target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_rand_100_5%n_1%e_edm_rel_1")
 
 Z = scipy.io.loadmat(target_path)
-Z = Z['Z']
-Z = Z.T
+Z1 = Z['Z']
 
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_rand_100_5%n_1%e_edm_rel_2")
+
+Z = scipy.io.loadmat(target_path)
+Z2 = Z['Z']
+Z = (Z1.T + Z2.T)/2
 
 plt.plot(intercon_axis, Z, color="red", label="Prob. Algo. Random Init.")
 
 target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_std_200_5%n_1%e_edm_rel_1")
 
 Z = scipy.io.loadmat(target_path)
-Z = Z['Z']
-Z = Z.T
+Z1 = Z['Z']
+
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_std_200_5%n_1%e_edm_rel_2")
+
+Z = scipy.io.loadmat(target_path)
+Z2 = Z['Z']
+
+Z = (Z1.T + Z2.T)/2
 
 plt.plot(intercon_axis, Z, color=colors[0], label="Prob. Algo. Init. Std. Dev. = 200")
 
 target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_std_100_5%n_1%e_edm_rel_1")
 
 Z = scipy.io.loadmat(target_path)
-Z = Z['Z']
-Z = Z.T
+Z1 = Z['Z']
+
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_std_100_5%n_1%e_edm_rel_2")
+
+Z = scipy.io.loadmat(target_path)
+Z2 = Z['Z']
+
+Z = (Z1.T + Z2.T)/2
 
 plt.plot(intercon_axis, Z, color=colors[9], label="Prob. Algo. Init. Std. Dev. = 100")
 
 target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_std_50_5%n_1%e_edm_rel_1")
 
 Z = scipy.io.loadmat(target_path)
-Z = Z['Z']
-Z = Z.T
+Z1 = Z['Z']
+
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_std_50_5%n_1%e_edm_rel_2")
+
+Z = scipy.io.loadmat(target_path)
+Z2 = Z['Z']
+
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_std_50_5%n_1%e_edm_rel_3")
+
+Z = scipy.io.loadmat(target_path)
+Z3 = Z['Z']
+
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_std_50_5%n_1%e_edm_rel_3")
+
+Z = scipy.io.loadmat(target_path)
+Z4 = Z['Z']
+
+Z = (Z1.T + Z2.T + Z3.T + Z4.T)/4
 
 plt.plot(intercon_axis, Z, color=colors[19], label="Prob. Algo. Init. Std. Dev. = 50")
 
