@@ -28,7 +28,7 @@ import time
 
 #intercon_axis = np.arange(5, 98, 2)
 intercon_start = 1
-intercon_end = 98 #98
+intercon_end = 62 #98
 intercon_step = 4
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
 
@@ -37,16 +37,16 @@ error_end = 161
 error_step = 4
 error_axis = np.arange(error_start, error_end, error_step)
 
-noise_start = 0
-noise_end = 101 #101
+noise_start = 1 #0
+noise_end = 2#101
 noise_step = 4
 noise_axis = np.arange(noise_start, noise_end, noise_step)
 
-target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_test.mat")
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_noi_1_err_0_edm_rel_1.mat")
 ##############
 
 def get_err(index, intercon, error):
-    dist_df = gen_dist_df(98, intercon, noise_percent=error)
+    dist_df = gen_dist_df(98, intercon, noise_percent=error, error_percent=0)
     err = reconstruct(dist_df, err_ord='edm_rel', parallel_num_str=str(index))
     return err
 

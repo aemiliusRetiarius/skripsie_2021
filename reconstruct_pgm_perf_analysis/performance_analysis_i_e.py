@@ -21,7 +21,7 @@ from cube_gen import get_point_coords, gen_dist_df, get_true_points_array
 sibling_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'common_tools')
 sys.path.insert(0, sibling_path)
 
-from common_tools import get_uniform_point_coords
+from common_tools import get_rot_matrix, get_uniform_point_coords
 
 from sklearn.metrics import euclidean_distances
 
@@ -34,12 +34,12 @@ intercon_end = 62
 intercon_step = 4
 intercon_axis = np.arange(intercon_start, intercon_end, intercon_step)
 
-initStd_start =  1#1
-initStd_end = 101 #101
-initStd_step = 4
-initStd_axis = np.arange(initStd_start, initStd_end, initStd_step)
+noise_start = 0
+noise_end = 101 #101
+noise_step = 4
+noise_axis = np.arange(noise_start, noise_end, noise_step)
 
-target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_std_100_err_1_101_4_edm_rel_1")
+target_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "Data", "z_inter_1_62_4_init_rand_100_err_1_101_4_edm_rel_1")
 
 program_path = './reconstruct_pgm/build/src/reconstruct_pgm'
 
@@ -83,8 +83,8 @@ def get_err(index):
     print("index:",index)
     return_code = -1
     lambda_fac = 0.8
-    iter = 15
-    tol = 296
+    iter = 25
+    tol = 294
 
     while return_code != 0:
         
@@ -109,16 +109,6 @@ def get_err(index):
     #res = res - res[0, :]
     #res = np.dot(res, trans)
 
-    #res = res - res[0,:]
-
-    #true_points_subset = np.vstack((true_points[0,:],true_points[4,:],true_points[20,:],true_points[29,:]))
-    #res_subset = np.vstack((res[0,:],res[4,:],res[20,:],res[29,:]))
-
-    #trans, householder_flag, householder = get_rot_matrix(res_subset, true_points_subset)
-    #if householder_flag : res = np.dot(res, householder)
-    
-    #res = trans[0].apply(res)
-
     true_edm = euclidean_distances(true_points)
     res_edm = euclidean_distances(res)
 
@@ -127,25 +117,24 @@ def get_err(index):
 
     return err
 
-def create_csv_files(index, intercon, std_dev):
+def create_csv_files(index, intercon, noise):
     print("making file:",index)
     pos_df = pd.DataFrame()
-    pos_df = get_point_coords(100)
-    #pos_df = get_uniform_point_coords()
+    pos_df = get_uniform_point_coords()
     pos_df = observe_positions(pos_df)
     pos_df.to_csv(priorPos_path+str(index)+'.csv')
 
-    dist_df = gen_dist_df(98, intercon, enforce_cons=True, error_percent=std_dev)
+    dist_df = gen_dist_df(98, intercon, enforce_cons=True, error_percent=noise)
     dist_df.to_csv(dists_path+str(index)+'.csv')
     return
 
 
-def get_avg_err(intercon, std_dev):
-    print("inter:", intercon, "std_dev:", std_dev)
+def get_avg_err(intercon, noise):
+    print("inter:", intercon, "noise:", noise)
     inputs = [0, 1, 2, 3]
 
     for index in inputs: #have to make individually, pool is making identical csv files
-        create_csv_files(index, intercon, std_dev)
+        create_csv_files(index, intercon, noise)
 
     #pool.starmap(create_csv_files, zip(inputs, itertools.repeat(intercon), itertools.repeat(std_dev)))
     outputs = pool.starmap(get_err, zip(inputs))
@@ -170,7 +159,7 @@ def step_params(intercon_1_d, error_1_d):
 
 start_time = time.time()
 
-X, Y = np.meshgrid(intercon_axis,initStd_axis)
+X, Y = np.meshgrid(intercon_axis,noise_axis)
 
 pool = mp.Pool(processes=4)
 
@@ -190,7 +179,7 @@ ax = plt.axes(projection="3d")
 ax.plot_surface(X, Y, Z, cmap=cm.coolwarm)
 
 ax.set_xlabel('Interconnection')
-ax.set_ylabel('Initial position std dev.')
-ax.set_zlabel('Relative error')
+ax.set_ylabel('Noise %')
+ax.set_zlabel('Relative EDM error')
 
 plt.show()
